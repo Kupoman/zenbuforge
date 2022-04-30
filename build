@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker run --rm -it -v $PWD:/input panda3d-web-freezify
+mv -f main.js main.wasm dist/
