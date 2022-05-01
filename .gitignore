@@ -1,0 +1,4 @@
+venv
+
+dist/main.js
+dist/main.wasm
