@@ -41,6 +41,17 @@ class App(ShowBase):
         )
 
         taskMgr.add(self.update_canvas, 'update_canvas_task')
+        self.model_root = p3d.NodePath()
+
+        self.accept('w', self.toggle_wireframe)
+        self.accept('t', self.toggle_texture)
+        self.accept('n', self.toggle_normal_maps)
+        self.accept('e', self.toggle_emission_maps)
+        self.accept('o', self.toggle_occlusion_maps)
+        self.accept('a', self.toggle_ambient_light)
+        self.accept('shift-l', self.model_ls)
+        self.accept('shift-a', self.model_analyze)
+
         self.fetch_model()
 
     def fetch_model(self):
@@ -74,15 +85,6 @@ class App(ShowBase):
             except:
                 raise RuntimeError("Failed to convert glTF file")
 
-        self.accept('w', self.toggle_wireframe)
-        self.accept('t', self.toggle_texture)
-        self.accept('n', self.toggle_normal_maps)
-        self.accept('e', self.toggle_emission_maps)
-        self.accept('o', self.toggle_occlusion_maps)
-        self.accept('a', self.toggle_ambient_light)
-        self.accept('shift-l', self.model_root.ls)
-        self.accept('shift-a', self.model_root.analyze)
-
         self.model_root.reparent_to(self.render)
 
         bounds = self.model_root.getBounds()
@@ -104,7 +106,7 @@ class App(ShowBase):
         # Create a light if the model does not have one
         if not self.model_root.find('**/+Light'):
             self.light = self.render.attach_new_node(p3d.PointLight('light'))
-            self.light.set_pos(0, -distance, distance)
+            self.light.set_pos(distance, -distance, distance)
             self.render.set_light(self.light)
 
         # Move lights to render
@@ -138,6 +140,12 @@ class App(ShowBase):
             self.render.clear_light(self.ambient)
         else:
             self.render.set_light(self.ambient)
+
+    def model_ls(self):
+        self.model_root.ls()
+
+    def model_analyze(self):
+        self.model_root.analyze()
 
     def update_canvas(self, task):
         viewportElement = browser.window
