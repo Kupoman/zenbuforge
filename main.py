@@ -1,14 +1,14 @@
 import math
 
-import browser
-import emscripten
-
 from direct.showbase.ShowBase import ShowBase
 import panda3d.core as p3d
 
 
 import simplepbr
 import gltf
+
+
+import zenbuforge
 
 
 p3d.loadPrcFileData(
@@ -40,7 +40,9 @@ class App(ShowBase):
             msaa_samples=0
         )
 
-        taskMgr.add(self.update_canvas, 'update_canvas_task')
+        self.runtime = zenbuforge.runtime.make()
+
+        taskMgr.add(self.runtime.update, 'Update Runtime', extraArgs=[self], appendTask=True)
         self.model_root = p3d.NodePath()
 
         self.accept('w', self.toggle_wireframe)
@@ -52,35 +54,17 @@ class App(ShowBase):
         self.accept('shift-l', self.model_ls)
         self.accept('shift-a', self.model_analyze)
 
-        self.fetch_model()
-
-    def fetch_model(self):
-        params = browser.Reflect.construct(
-            browser.URLSearchParams,
-            browser.Array(browser.window.location.search)
-        )
-        url = params.get('file')
-        if not url:
-            url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Embedded/Box.gltf'
-        else:
-            url = browser.decodeURI(url)
-
-        def onload(file):
-            self.load_model()
-        def onerror(file):
-            print(f'Unable to fetch ${file}')
-
-        emscripten.async_wget(url, 'model', onload, onerror)
+        self.runtime.fetch_model(self.load_model)
 
 
-    def load_model(self):
+    def load_model(self, filename):
         bamfilepath = 'scratch.bam'
         gltf_settings = None
         loader_kwargs = {
         }
         with open(bamfilepath, 'w') as bamfile:
             try:
-                gltf.converter.convert(p3d.Filename('.', 'model'), bamfilepath, gltf_settings)
+                gltf.converter.convert(filename, bamfilepath, gltf_settings)
                 self.model_root = loader.load_model(p3d.Filename('.', bamfilepath), **loader_kwargs)
             except:
                 raise RuntimeError("Failed to convert glTF file")
@@ -146,28 +130,6 @@ class App(ShowBase):
 
     def model_analyze(self):
         self.model_root.analyze()
-
-    def update_canvas(self, task):
-        viewportElement = browser.window
-        viewportAttribute = 'inner'
-        if not viewportElement.innerWidth:
-            attribute = client
-            viewportElement = (
-                browser.document.documentElement if browser.document.documentElement
-                else browser.document.body
-            )
-        width = viewportElement[f'{viewportAttribute}Width']
-        height = viewportElement[f'{viewportAttribute}Height']
-
-        canvas = browser.document.getElementById('canvas')
-        canvas.width = width
-        canvas.height = height
-
-        props = p3d.WindowProperties()
-        props.setSize(width, height)
-        self.win.requestProperties(props)
-
-        return task.cont
 
 
 def main():
