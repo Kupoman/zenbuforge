@@ -1,7 +1,5 @@
-import importlib
-
-import browser
-import emscripten
+import browser     # pylint: disable=import-error
+import emscripten  # pylint: disable=import-error
 import panda3d.core as p3d
 
 
@@ -27,11 +25,14 @@ class WebRuntime():
         )
         url = params.get('file')
         if not url:
-            url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Embedded/Box.gltf'
+            url = (
+                'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/'
+                'Box/glTF-Embedded/Box.gltf'
+            )
         else:
             url = browser.decodeURI(url)
 
-        def onload(file):
+        def onload(_):
             callback(p3d.Filename('.', 'model'))
         def onerror(file):
             print(f'Unable to fetch ${file}')
@@ -39,16 +40,16 @@ class WebRuntime():
         emscripten.async_wget(url, 'model', onload, onerror)
 
     def update(self, task):
-        viewportElement = browser.window
-        viewportAttribute = 'inner'
-        if not viewportElement.innerWidth:
-            attribute = client
-            viewportElement = (
+        viewport_element = browser.window
+        viewport_attribute = 'inner'
+        if not viewport_element.innerWidth:
+            viewport_attribute = 'client'
+            viewport_element = (
                 browser.document.documentElement if browser.document.documentElement
                 else browser.document.body
             )
-        width = viewportElement[f'{viewportAttribute}Width']
-        height = viewportElement[f'{viewportAttribute}Height']
+        width = viewport_element[f'{viewport_attribute}Width']
+        height = viewport_element[f'{viewport_attribute}Height']
 
         canvas = browser.document.getElementById('canvas')
         canvas.width = width
