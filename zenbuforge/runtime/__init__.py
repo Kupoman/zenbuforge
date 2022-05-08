@@ -8,5 +8,5 @@ except ImportError:
     pass
 
 
-def make():
-    return RUNTIME()
+def make(base):
+    return RUNTIME(base)

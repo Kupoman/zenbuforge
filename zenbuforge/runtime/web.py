@@ -6,6 +6,20 @@ import panda3d.core as p3d
 
 
 class WebRuntime():
+    def __init__(self, base):
+        self._base = base
+
+        gsg = self._base.win.get_gsg()
+        extensions = [
+            'EXT_color_buffer_float',
+        ]
+        for ext in extensions:
+            if gsg.has_extension(ext):
+                print(ext, 'is enabled')
+            else:
+                print(ext, 'is disabled')
+
+
     def fetch_model(self, callback):
         params = browser.Reflect.construct(
             browser.URLSearchParams,
@@ -24,7 +38,7 @@ class WebRuntime():
 
         emscripten.async_wget(url, 'model', onload, onerror)
 
-    def update(self, base, task):
+    def update(self, task):
         viewportElement = browser.window
         viewportAttribute = 'inner'
         if not viewportElement.innerWidth:
@@ -42,6 +56,6 @@ class WebRuntime():
 
         props = p3d.WindowProperties()
         props.setSize(width, height)
-        base.win.requestProperties(props)
+        self._base.win.requestProperties(props)
 
         return task.cont

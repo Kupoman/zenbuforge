@@ -24,15 +24,7 @@ class App(ShowBase):
     def __init__(self):
         super().__init__()
 
-        gsg = self.win.get_gsg()
-        extensions = [
-            'EXT_color_buffer_float',
-        ]
-        for ext in extensions:
-            if gsg.has_extension(ext):
-                print(ext, 'is enabled')
-            else:
-                print(ext, 'is disabled')
+        self.runtime = zenbuforge.runtime.make(self)
 
         self.pipeline = simplepbr.init(
             use_330=True,
@@ -40,9 +32,7 @@ class App(ShowBase):
             msaa_samples=0
         )
 
-        self.runtime = zenbuforge.runtime.make()
-
-        taskMgr.add(self.runtime.update, 'Update Runtime', extraArgs=[self], appendTask=True)
+        taskMgr.add(self.runtime.update, 'Update Runtime')
         self.model_root = p3d.NodePath()
 
         self.accept('w', self.toggle_wireframe)
