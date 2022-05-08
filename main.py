@@ -1,14 +1,14 @@
 import math
 
-import browser
-import emscripten
-
 from direct.showbase.ShowBase import ShowBase
 import panda3d.core as p3d
 
 
 import simplepbr
 import gltf
+
+
+import zenbuforge
 
 
 p3d.loadPrcFileData(
@@ -24,15 +24,7 @@ class App(ShowBase):
     def __init__(self):
         super().__init__()
 
-        gsg = self.win.get_gsg()
-        extensions = [
-            'EXT_color_buffer_float',
-        ]
-        for ext in extensions:
-            if gsg.has_extension(ext):
-                print(ext, 'is enabled')
-            else:
-                print(ext, 'is disabled')
+        self.runtime = zenbuforge.runtime.make(self)
 
         self.pipeline = simplepbr.init(
             use_330=True,
@@ -40,39 +32,8 @@ class App(ShowBase):
             msaa_samples=0
         )
 
-        taskMgr.add(self.update_canvas, 'update_canvas_task')
-        self.fetch_model()
-
-    def fetch_model(self):
-        params = browser.Reflect.construct(
-            browser.URLSearchParams,
-            browser.Array(browser.window.location.search)
-        )
-        url = params.get('file')
-        if not url:
-            url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Embedded/Box.gltf'
-        else:
-            url = browser.decodeURI(url)
-
-        def onload(file):
-            self.load_model()
-        def onerror(file):
-            print(f'Unable to fetch ${file}')
-
-        emscripten.async_wget(url, 'model', onload, onerror)
-
-
-    def load_model(self):
-        bamfilepath = 'scratch.bam'
-        gltf_settings = None
-        loader_kwargs = {
-        }
-        with open(bamfilepath, 'w') as bamfile:
-            try:
-                gltf.converter.convert(p3d.Filename('.', 'model'), bamfilepath, gltf_settings)
-                self.model_root = loader.load_model(p3d.Filename('.', bamfilepath), **loader_kwargs)
-            except:
-                raise RuntimeError("Failed to convert glTF file")
+        taskMgr.add(self.runtime.update, 'Update Runtime')
+        self.model_root = p3d.NodePath()
 
         self.accept('w', self.toggle_wireframe)
         self.accept('t', self.toggle_texture)
@@ -80,8 +41,23 @@ class App(ShowBase):
         self.accept('e', self.toggle_emission_maps)
         self.accept('o', self.toggle_occlusion_maps)
         self.accept('a', self.toggle_ambient_light)
-        self.accept('shift-l', self.model_root.ls)
-        self.accept('shift-a', self.model_root.analyze)
+        self.accept('shift-l', self.model_ls)
+        self.accept('shift-a', self.model_analyze)
+
+        self.runtime.fetch_model(self.load_model)
+
+
+    def load_model(self, filename):
+        bamfilepath = 'scratch.bam'
+        gltf_settings = None
+        loader_kwargs = {
+        }
+        with open(bamfilepath, 'w') as bamfile:
+            try:
+                gltf.converter.convert(filename, bamfilepath, gltf_settings)
+                self.model_root = loader.load_model(p3d.Filename('.', bamfilepath), **loader_kwargs)
+            except:
+                raise RuntimeError("Failed to convert glTF file")
 
         self.model_root.reparent_to(self.render)
 
@@ -104,7 +80,7 @@ class App(ShowBase):
         # Create a light if the model does not have one
         if not self.model_root.find('**/+Light'):
             self.light = self.render.attach_new_node(p3d.PointLight('light'))
-            self.light.set_pos(0, -distance, distance)
+            self.light.set_pos(distance, -distance, distance)
             self.render.set_light(self.light)
 
         # Move lights to render
@@ -139,27 +115,11 @@ class App(ShowBase):
         else:
             self.render.set_light(self.ambient)
 
-    def update_canvas(self, task):
-        viewportElement = browser.window
-        viewportAttribute = 'inner'
-        if not viewportElement.innerWidth:
-            attribute = client
-            viewportElement = (
-                browser.document.documentElement if browser.document.documentElement
-                else browser.document.body
-            )
-        width = viewportElement[f'{viewportAttribute}Width']
-        height = viewportElement[f'{viewportAttribute}Height']
+    def model_ls(self):
+        self.model_root.ls()
 
-        canvas = browser.document.getElementById('canvas')
-        canvas.width = width
-        canvas.height = height
-
-        props = p3d.WindowProperties()
-        props.setSize(width, height)
-        self.win.requestProperties(props)
-
-        return task.cont
+    def model_analyze(self):
+        self.model_root.analyze()
 
 
 def main():
