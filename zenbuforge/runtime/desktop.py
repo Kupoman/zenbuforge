@@ -1,7 +1,5 @@
 import sys
 
-import panda3d.core as p3d
-
 
 class DesktopRuntime():
     def __init__(self, base):

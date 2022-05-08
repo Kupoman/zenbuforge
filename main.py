@@ -32,8 +32,11 @@ class App(ShowBase):
             msaa_samples=0
         )
 
-        taskMgr.add(self.runtime.update, 'Update Runtime')
+        self.taskMgr.add(self.runtime.update, 'Update Runtime')
         self.model_root = p3d.NodePath()
+        self.light = p3d.NodePath()
+        self.ambient = p3d.NodePath()
+        self.anims = p3d.AnimControlCollection()
 
         self.accept('w', self.toggle_wireframe)
         self.accept('t', self.toggle_texture)
@@ -52,12 +55,15 @@ class App(ShowBase):
         gltf_settings = None
         loader_kwargs = {
         }
-        with open(bamfilepath, 'w') as bamfile:
+        with open(bamfilepath, 'wb'):
             try:
                 gltf.converter.convert(filename, bamfilepath, gltf_settings)
-                self.model_root = loader.load_model(p3d.Filename('.', bamfilepath), **loader_kwargs)
-            except:
-                raise RuntimeError("Failed to convert glTF file")
+                self.model_root = self.loader.load_model(
+                    p3d.Filename('.', bamfilepath),
+                    **loader_kwargs
+                )
+            except Exception as error:
+                raise RuntimeError("Failed to convert glTF file") from error
 
         self.model_root.reparent_to(self.render)
 
