@@ -1,5 +1,4 @@
 import math
-
 from direct.showbase.ShowBase import ShowBase
 import panda3d.core as p3d
 
