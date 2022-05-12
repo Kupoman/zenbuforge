@@ -1,7 +1,50 @@
+import json
+
 import browser     # pylint: disable=import-error
 import emscripten  # pylint: disable=import-error
 import panda3d.core as p3d
 
+
+def _list_uris(filename):
+    gltf = {}
+    uris = set()
+    with open(filename, 'r', encoding='utf-8') as fin:
+        gltf = json.load(fin)
+
+    def _walk_json(source, callback=None):
+        callback(source)
+        if isinstance(source, dict):
+            for value in source.values():
+                _walk_json(value, callback)
+        elif isinstance(source, list):
+            for value in source:
+                _walk_json(value, callback)
+
+    def print_values(source):
+        if isinstance(source, dict) and 'uri' in source:
+            uris.add(source['uri'])
+
+    _walk_json(gltf, callback=print_values)
+    return uris
+
+
+def _fetch_uris(base, uris, callback):
+    completed = []
+
+    def check_complete(file):
+        completed.append(file)
+        print(f'Fetched {file}')
+        if len(completed) == len(uris):
+            print('All references fetched')
+            callback()
+
+    def onerror(file):
+        print(f'Unable to fetch ${file}')
+
+    for uri in uris:
+        full_uri = f'{base}/{uri}'
+        print(f'Fetching {full_uri}')
+        emscripten.async_wget(full_uri, uri, check_complete, onerror)
 
 class WebRuntime():
     def __init__(self, base):
@@ -33,7 +76,11 @@ class WebRuntime():
             url = browser.decodeURI(url)
 
         def onload(_):
-            callback(p3d.Filename('.', 'model'))
+            def on_ref_fetched():
+                callback(p3d.Filename('.', 'model'))
+            base = url.replace(url.split('/')[-1], '')
+            uris = _list_uris('model')
+            _fetch_uris(base, uris, on_ref_fetched)
         def onerror(file):
             print(f'Unable to fetch ${file}')
 
