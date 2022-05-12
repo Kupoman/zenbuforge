@@ -31,6 +31,10 @@ def _list_uris(filename):
 def _fetch_uris(base, uris, callback):
     completed = []
 
+    if len(uris) == 0:
+        callback()
+        return
+
     def check_complete(file):
         completed.append(file)
         print(f'Fetched {file}')
@@ -79,7 +83,11 @@ class WebRuntime():
             def on_ref_fetched():
                 callback(p3d.Filename('.', 'model'))
             base = url.replace(url.split('/')[-1], '')
-            uris = _list_uris('model')
+            try:
+                uris = _list_uris('model')
+            except UnicodeDecodeError:
+                print('Unable to decode file, hopefully it is a binary file')
+                uris = []
             _fetch_uris(base, uris, on_ref_fetched)
         def onerror(file):
             print(f'Unable to fetch ${file}')
