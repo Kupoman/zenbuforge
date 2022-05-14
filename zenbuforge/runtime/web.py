@@ -46,6 +46,9 @@ def _fetch_uris(base, uris, callback):
         print(f'Unable to fetch ${file}')
 
     for uri in uris:
+        if uri.startswith('data:'):
+            check_complete(uri)
+            continue
         full_uri = f'{base}/{uri}'
         print(f'Fetching {full_uri}')
         emscripten.async_wget(full_uri, uri, check_complete, onerror)
