@@ -1,57 +1,9 @@
-import json
+import io
 
 import browser     # pylint: disable=import-error
 import emscripten  # pylint: disable=import-error
 import panda3d.core as p3d
 
-
-def _list_uris(filename):
-    gltf = {}
-    uris = set()
-    with open(filename, 'r', encoding='utf-8') as fin:
-        gltf = json.load(fin)
-
-    def _walk_json(source, callback=None):
-        callback(source)
-        if isinstance(source, dict):
-            for value in source.values():
-                _walk_json(value, callback)
-        elif isinstance(source, list):
-            for value in source:
-                _walk_json(value, callback)
-
-    def print_values(source):
-        if isinstance(source, dict) and 'uri' in source:
-            uris.add(source['uri'])
-
-    _walk_json(gltf, callback=print_values)
-    return uris
-
-
-def _fetch_uris(base, uris, callback):
-    completed = []
-
-    if len(uris) == 0:
-        callback()
-        return
-
-    def check_complete(file):
-        completed.append(file)
-        print(f'Fetched {file}')
-        if len(completed) == len(uris):
-            print('All references fetched')
-            callback()
-
-    def onerror(file):
-        print(f'Unable to fetch ${file}')
-
-    for uri in uris:
-        if uri.startswith('data:'):
-            check_complete(uri)
-            continue
-        full_uri = f'{base}/{uri}'
-        print(f'Fetching {full_uri}')
-        emscripten.async_wget(full_uri, uri, check_complete, onerror)
 
 class WebRuntime():
     def __init__(self, base):
@@ -77,25 +29,27 @@ class WebRuntime():
         if not url:
             url = (
                 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/'
-                'Box/glTF-Embedded/Box.gltf'
+                'Box/glTF-Binary/Box.glb'
             )
         else:
             url = browser.decodeURI(url)
 
-        def onload(_):
-            def on_ref_fetched():
-                callback(p3d.Filename('.', 'model'))
-            base = url.replace(url.split('/')[-1], '')
-            try:
-                uris = _list_uris('model')
-            except UnicodeDecodeError:
-                print('Unable to decode file, hopefully it is a binary file')
-                uris = []
-            _fetch_uris(base, uris, on_ref_fetched)
-        def onerror(file):
-            print(f'Unable to fetch ${file}')
+        def onload(_, buffer):
+            callback(io.BytesIO(buffer.tobytes()))
+        def onerror(_, code, description):
+            print(f'Unable to fetch ${url}: ({code}) {description}')
+        def onprogress(_, bytes_loaded, bytes_total):
+            if bytes_total > 0:
+                print(f'File progress: {(bytes_loaded / bytes_total) * 100 :.0f}%')
 
-        emscripten.async_wget(url, 'model', onload, onerror)
+        emscripten.async_wget2_data(
+            url=url,
+            requesttype='GET',
+            param='',
+            onload=onload,
+            onerror=onerror,
+            onprogress=onprogress,
+        )
 
     def update(self, task):
         viewport_element = browser.window

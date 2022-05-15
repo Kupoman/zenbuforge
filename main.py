@@ -49,20 +49,19 @@ class App(ShowBase):
         self.runtime.fetch_model(self.load_model)
 
 
-    def load_model(self, filename):
-        bamfilepath = 'scratch.bam'
-        gltf_settings = None
-        loader_kwargs = {
-        }
-        with open(bamfilepath, 'wb'):
-            try:
-                gltf.converter.convert(filename, bamfilepath, gltf_settings)
-                self.model_root = self.loader.load_model(
-                    p3d.Filename('.', bamfilepath),
-                    **loader_kwargs
-                )
-            except Exception as error:
-                raise RuntimeError("Failed to convert glTF file") from error
+    def load_model(self, stream):
+        try:
+            converter = gltf.converter.Converter(
+                indir=None,
+                outdir=None,
+                settings=gltf.converter.GltfSettings(),
+            )
+            gltf_data = gltf.converter.load_gltf(converter, stream)
+            converter.update(gltf_data, writing_bam=False)
+
+            self.model_root = converter.active_scene
+        except Exception as error:
+            raise RuntimeError("Failed to convert glTF file") from error
 
         self.model_root.reparent_to(self.render)
 
