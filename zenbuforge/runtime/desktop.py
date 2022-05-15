@@ -6,7 +6,8 @@ class DesktopRuntime():
         self._base = base
 
     def fetch_model(self, callback):
-        callback(sys.argv[1])
+        with open(sys.argv[1], 'rb') as stream:
+            callback(stream)
 
     def update(self, task):
         return task.cont
