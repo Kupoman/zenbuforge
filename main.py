@@ -1,4 +1,4 @@
-import math
+
 from direct.showbase.ShowBase import ShowBase
 import panda3d.core as p3d
 
@@ -19,7 +19,6 @@ p3d.loadPrcFileData(
 
 
 class App(ShowBase):
-
     def __init__(self):
         super().__init__()
 
@@ -30,6 +29,9 @@ class App(ShowBase):
             use_hardware_skinning=False,
             msaa_samples=0
         )
+
+        self.disable_mouse()
+        self.camera_controller = zenbuforge.OrbitCameraController(self.camera, self.mouseWatcherNode, self.win)
 
         self.taskMgr.add(self.runtime.update, 'Update Runtime')
         self.model_root = p3d.NodePath()
@@ -48,7 +50,6 @@ class App(ShowBase):
 
         self.runtime.fetch_model(self.load_model)
 
-
     def load_model(self, stream):
         try:
             converter = gltf.converter.Converter(
@@ -64,27 +65,12 @@ class App(ShowBase):
             raise RuntimeError("Failed to convert glTF file") from error
 
         self.model_root.reparent_to(self.render)
-
-        bounds = self.model_root.getBounds()
-        center = bounds.get_center()
-        if bounds.is_empty():
-            radius = 1
-        else:
-            radius = bounds.get_radius()
-
-        fov = self.camLens.get_fov()
-        distance = radius / math.tan(math.radians(min(fov[0], fov[1]) / 2.0))
-        self.camLens.set_near(min(self.camLens.get_default_near(), radius / 2))
-        self.camLens.set_far(max(self.camLens.get_default_far(), distance + radius * 2))
-        trackball = self.trackball.node()
-        trackball.set_origin(center)
-        trackball.set_pos(0, distance, 0)
-        trackball.setForwardScale(distance * 0.006)
+        self.camera_controller.focus_model(self.model_root)
 
         # Create a light if the model does not have one
         if not self.model_root.find('**/+Light'):
             self.light = self.render.attach_new_node(p3d.PointLight('light'))
-            self.light.set_pos(distance, -distance, distance)
+            self.light.set_pos(3, -3, 3)
             self.render.set_light(self.light)
 
         # Move lights to render
