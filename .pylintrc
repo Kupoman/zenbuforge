@@ -91,10 +91,10 @@ disable=raw-checker-failed,
         useless-suppression,
         deprecated-pragma,
         use-symbolic-message-instead,
-        no-self-use,
         C0114, # missing-module-docstring
         C0115, # missing-class-docstring
-        C0116 # missing-function-docstring
+        C0116, # missing-function-docstring
+        too-many-instance-attributes
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -254,7 +254,8 @@ good-names=i,
            k,
            ex,
            Run,
-           _
+           _,
+           dt
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
