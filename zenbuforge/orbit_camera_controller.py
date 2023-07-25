@@ -2,7 +2,6 @@ import math
 
 import direct
 from direct.showbase.ShowBaseGlobal import globalClock
-import panda3d.core as p3d
 
 
 class OrbitCameraController(direct.showbase.DirectObject.DirectObject):
@@ -29,8 +28,6 @@ class OrbitCameraController(direct.showbase.DirectObject.DirectObject):
         self.accept('mouse1-up', self.end_rotation)
         self.accept('wheel_up', self.zoom_in)
         self.accept('wheel_down', self.zoom_out)
-
-        self.focus_model(p3d.PandaNode('test'))
 
     def start_rotation(self):
         self._is_rotating = True
@@ -88,4 +85,3 @@ class OrbitCameraController(direct.showbase.DirectObject.DirectObject):
         self._camera.look_at(self._target)
 
         return task.cont
-

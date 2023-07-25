@@ -31,7 +31,11 @@ class App(ShowBase):
         )
 
         self.disable_mouse()
-        self.camera_controller = zenbuforge.OrbitCameraController(self.camera, self.mouseWatcherNode, self.win)
+        self.camera_controller = zenbuforge.OrbitCameraController(
+            self.camera,
+            self.mouseWatcherNode,
+            self.win
+        )
 
         self.taskMgr.add(self.runtime.update, 'Update Runtime')
         self.model_root = p3d.NodePath()
