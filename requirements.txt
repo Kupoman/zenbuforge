@@ -1,3 +1,0 @@
-Panda3D==1.10.13
-panda3d-gltf @ git+https://github.com/Kupoman/panda3d-gltf.git@decouple-file-io
-panda3d-simplepbr @ git+https://github.com/Kupoman/panda3d-simplepbr.git@compile-webgl
