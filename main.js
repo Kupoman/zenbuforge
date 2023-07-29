@@ -1,37 +1,18 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import CameraControls from './lib/CameraControls';
+import Zenbuforge from './lib/Zenbuforge';
 
-const clock = new THREE.Clock();
+const canvas = document.getElementById('viewport');
+const zenbuforge = new Zenbuforge(canvas);
+await zenbuforge.init();
+zenbuforge.resize(window.innerWidth, window.innerHeight);
+window.onresize = () => zenbuforge.resize(window.innerWidth, window.innerHeight);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.y = 1;
+const urlBase = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/';
+fetch(`${urlBase}/Sponza.gltf`)
+  .then((response) => response.json())
+  .then((json) => zenbuforge.load(json, urlBase));
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xcccccc);
-
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-const loader = new GLTFLoader();
-const url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/Sponza.gltf';
-loader.load(url, (gltf) => {
-  scene.add(gltf.scene);
-});
-
-const light = new THREE.PointLight();
-light.position.set(0, 1, 0);
-light.intensity = 5;
-scene.add(light);
-
-const controls = new CameraControls(camera, renderer.domElement);
-controls.rollSpeed = 2;
-
-function animate() {
-  requestAnimationFrame(animate);
-  const dt = clock.getDelta();
-  controls.update(dt);
-  renderer.render(scene, camera);
+function loop() {
+  zenbuforge.update();
+  requestAnimationFrame(loop);
 }
-animate();
+loop();
