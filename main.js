@@ -19,25 +19,27 @@ const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const loader = new GLTFLoader();
-const urlBase = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/';
 const dataState = new DataState();
+
+const urlBase = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/';
+function loadGltf(json) {
+  const loader = new GLTFLoader();
+  return new Promise((resolve, reject) => {
+    loader.parse(json, urlBase, resolve, reject);
+  });
+}
 fetch(`${urlBase}/Sponza.gltf`)
   .then((response) => response.json())
   .then((result) => {
-    dataState.init(result);
+    dataState.setGltf(result);
     return result;
   })
-  .then((json) => loader.parse(
-    json,
-    urlBase,
-    (gltf) => {
-      scene.add(gltf.scene);
-    },
-    (error) => {
-      alert(`Failed to parse file: ${error.message}`);
-    },
-  ))
+  .then((json) => loadGltf(json))
+  .then((result) => {
+    scene.add(result.scene);
+    return result;
+  })
+  .then((result) => dataState.setDisplayModel(result))
   .catch((error) => {
     alert(error.message);
   });
