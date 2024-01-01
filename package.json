@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@vitejs/plugin-basic-ssl": "^1.0.2",
     "idb": "^8.0.0",
     "three": "^0.155.0",
     "uuid": "^9.0.1",
@@ -17,9 +16,12 @@
     "yjs": "^13.6.10"
   },
   "devDependencies": {
-    "eslint": "^8.46.0",
+    "@vitejs/plugin-basic-ssl": "^1.0.2",
+    "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.28.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-mocha": "^10.2.0",
+    "mocha": "^10.2.0",
     "vite": "^4.4.7"
   }
 }
