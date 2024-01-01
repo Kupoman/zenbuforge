@@ -32,5 +32,6 @@ module.exports = {
     'no-underscore-dangle': 'off',
     'max-classes-per-file': 'off',
     'no-return-assign': 'off',
+    'import/extensions': ['warn', 'always'],
   },
 };
