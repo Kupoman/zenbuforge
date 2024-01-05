@@ -2,32 +2,31 @@ import assert from 'assert';
 
 import Project from '../lib/Project.mjs';
 
-function createProjects() {
-  const doc1 = new Project();
-  const doc2 = new Project({
-    ydoc: doc1.ydoc,
-  });
-  return [doc1, doc2];
-}
-
-function testListProperty(key) {
-  const [doc1, doc2] = createProjects();
+function testListProperty(key, done) {
+  const proj = new Project();
   const data = { name: 'test' };
-  doc1[key].push(data);
-  assert.equal(doc2[key].length, 1);
-  assert.equal(doc2[key][0].name, doc1[key][0].name);
+  proj.addResource(key, data);
+
+  proj[key].observeDeep((events) => {
+    done();
+  });
+  proj[key].get(0).set('name', 'new name');
 }
 
-function testMapProperty(key) {
-  const [doc1, doc2] = createProjects();
-  doc1[key].key = 'data';
-  assert.equal(doc2[key].key, doc1[key].key);
+function testMapProperty(key, done) {
+  const proj = new Project();
+  proj[key].observeDeep(() => {
+    done();
+  });
+  proj[key].set('key', 'value');
 }
 
-function testValueProperty(key) {
-  const [doc1, doc2] = createProjects();
-  doc1[key] = 2;
-  assert.equal(doc2[key], doc1[key]);
+function testValueProperty(key, done) {
+  const proj = new Project();
+  proj.ymap.observeDeep(() => {
+    done();
+  });
+  proj.ymap.set(key, 'value');
 }
 
 describe('Project', function () {
@@ -54,96 +53,96 @@ describe('Project', function () {
     it('should append new items', function () {
       const proj = new Project();
       proj.mergeJSON({ nodes: [makeNode('test')] });
-      assert.equal(proj.nodes[0].name, 'test');
+      assert.equal(proj.nodes.get(0).get('name'), 'test');
       assert.equal(proj.nodes.length, 1);
       proj.mergeJSON({ nodes: [makeNode('test2')] });
       assert.equal(proj.nodes.length, 2);
-      assert.equal(proj.nodes[1].name, 'test2');
+      assert.equal(proj.nodes.get(1).get('name'), 'test2');
     });
 
     it('should replace existing items', function () {
       const proj = new Project();
       proj.mergeJSON({ nodes: [makeNode('test')] });
-      assert.equal(proj.nodes[0].name, 'test');
+      assert.equal(proj.nodes.get(0).get('name'), 'test');
       assert.equal(proj.nodes.length, 1);
       proj.mergeJSON({ nodes: [makeNode('test')] });
       assert.equal(proj.nodes.length, 1);
     });
   });
 
-  it('should sync extensionsUsed data', function () {
-    testListProperty('extensionsUsed');
+  it('should sync extensionsUsed data', function (done) {
+    testListProperty('extensionsUsed', done);
   });
 
-  it('should sync extensionsRequired data', function () {
-    testListProperty('extensionsRequired');
+  it('should sync extensionsRequired data', function (done) {
+    testListProperty('extensionsRequired', done);
   });
 
-  it('should sync accessors data', function () {
-    testListProperty('accessors');
+  it('should sync accessors data', function (done) {
+    testListProperty('accessors', done);
   });
 
-  it('should sync asset data', function () {
-    testMapProperty('asset');
+  it('should sync asset data', function (done) {
+    testMapProperty('asset', done);
   });
 
-  it('should sync animations data', function () {
-    testListProperty('animations');
+  it('should sync animations data', function (done) {
+    testListProperty('animations', done);
   });
 
-  it('should sync buffers data', function () {
-    testListProperty('buffers');
+  it('should sync buffers data', function (done) {
+    testListProperty('buffers', done);
   });
 
-  it('should sync bufferViews data', function () {
-    testListProperty('bufferViews');
+  it('should sync bufferViews data', function (done) {
+    testListProperty('bufferViews', done);
   });
 
-  it('should sync cameras data', function () {
-    testListProperty('cameras');
+  it('should sync cameras data', function (done) {
+    testListProperty('cameras', done);
   });
 
-  it('should sync images data', function () {
-    testListProperty('images');
+  it('should sync images data', function (done) {
+    testListProperty('images', done);
   });
 
-  it('should sync materials data', function () {
-    testListProperty('materials');
+  it('should sync materials data', function (done) {
+    testListProperty('materials', done);
   });
 
-  it('should sync meshes data', function () {
-    testListProperty('meshes');
+  it('should sync meshes data', function (done) {
+    testListProperty('meshes', done);
   });
 
-  it('should sync nodes data', function () {
-    testListProperty('nodes');
+  it('should sync nodes data', function (done) {
+    testListProperty('nodes', done);
   });
 
-  it('should sync samplers data', function () {
-    testListProperty('samplers');
+  it('should sync samplers data', function (done) {
+    testListProperty('samplers', done);
   });
 
-  it('should sync scene data', function () {
-    testValueProperty('scene');
+  it('should sync scene data', function (done) {
+    testValueProperty('scene', done);
   });
 
-  it('should sync scenes data', function () {
-    testListProperty('scenes');
+  it('should sync scenes data', function (done) {
+    testListProperty('scenes', done);
   });
 
-  it('should sync skins data', function () {
-    testListProperty('skins');
+  it('should sync skins data', function (done) {
+    testListProperty('skins', done);
   });
 
-  it('should sync textures data', function () {
-    testListProperty('textures');
+  it('should sync textures data', function (done) {
+    testListProperty('textures', done);
   });
 
-  it('should sync extensions data', function () {
-    testMapProperty('extensions');
+  it('should sync extensions data', function (done) {
+    testMapProperty('extensions', done);
   });
 
-  it('should sync extras data', function () {
-    testMapProperty('extras');
+  it('should sync extras data', function (done) {
+    testMapProperty('extras', done);
   });
 });
