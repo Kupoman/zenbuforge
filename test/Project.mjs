@@ -4,13 +4,22 @@ import Project from '../lib/Project.mjs';
 
 function testListProperty(key, done) {
   const proj = new Project();
+  proj[key].observeDeep(() => {
+    done(); });
+  proj[key].push(['test']);
+}
+
+function testCollectionProperty(key, done) {
+  const proj = new Project();
   const data = { name: 'test' };
   proj.addResource(key, data);
 
-  proj[key].observeDeep((events) => {
+  proj[key].observeDeep(() => {
     done();
   });
-  proj[key].get(0).set('name', 'new name');
+  proj[key].forEach((value) => {
+    value.set('name', 'new name');
+  });
 }
 
 function testMapProperty(key, done) {
@@ -29,6 +38,17 @@ function testValueProperty(key, done) {
   proj.ymap.set(key, 'value');
 }
 
+function makeNode(name) {
+  return {
+    name,
+    extensions: {
+      ZF_id: {
+        id: name,
+      },
+    },
+  };
+}
+
 describe('Project', function () {
   describe('.toJSON()', function () {
     it('should return JSON object', function () {
@@ -38,35 +58,56 @@ describe('Project', function () {
     });
   });
 
-  describe('.mergeJSON()', function () {
-    function makeNode(name) {
-      return {
-        name,
-        extensions: {
-          ZF_id: {
-            id: name,
-          },
-        },
-      };
-    }
+  describe('.observe()', function () {
+    it('should generate actions', function () {
+      const proj = new Project();
+      const node = makeNode('test');
+      let count = 0;
+      proj.observe((event) => {
+        assert.equal(event.key, 'nodes');
+        assert.equal(event.id, 'test');
+        if (count === 0) {
+          assert.equal(event.action, 'add');
+          assert.deepEqual(event.data, node);
+        } else if (count === 1) {
+          const expected = JSON.parse(JSON.stringify(node));
+          expected.name = 'new name';
+          node.name = 'new name';
+          assert.equal(event.action, 'update');
+          assert.deepEqual(event.data, expected);
+        } else if (count === 2) {
+          assert.equal(event.action, 'delete');
+          assert.equal(event.data, null);
+        } else {
+          assert(false, 'Too many events');
+        }
+        count += 1;
+      });
+      proj.mergeJSON({ nodes: [node] });
+      proj.nodes.get('test').set('name', 'new name');
+      proj.nodes.delete('test');
+    });
+  });
 
+  describe('.mergeJSON()', function () {
     it('should append new items', function () {
       const proj = new Project();
+      let count = 0;
+      proj.observe((event) => {
+        count += 1;
+        assert.equal(proj[event.key].size, count);
+      });
       proj.mergeJSON({ nodes: [makeNode('test')] });
-      assert.equal(proj.nodes.get(0).get('name'), 'test');
-      assert.equal(proj.nodes.length, 1);
       proj.mergeJSON({ nodes: [makeNode('test2')] });
-      assert.equal(proj.nodes.length, 2);
-      assert.equal(proj.nodes.get(1).get('name'), 'test2');
     });
 
     it('should replace existing items', function () {
       const proj = new Project();
+      proj.observe((event) => {
+        assert.equal(proj[event.key].size, 1);
+      });
       proj.mergeJSON({ nodes: [makeNode('test')] });
-      assert.equal(proj.nodes.get(0).get('name'), 'test');
-      assert.equal(proj.nodes.length, 1);
       proj.mergeJSON({ nodes: [makeNode('test')] });
-      assert.equal(proj.nodes.length, 1);
     });
   });
 
@@ -79,7 +120,7 @@ describe('Project', function () {
   });
 
   it('should sync accessors data', function (done) {
-    testListProperty('accessors', done);
+    testCollectionProperty('accessors', done);
   });
 
   it('should sync asset data', function (done) {
@@ -87,39 +128,39 @@ describe('Project', function () {
   });
 
   it('should sync animations data', function (done) {
-    testListProperty('animations', done);
+    testCollectionProperty('animations', done);
   });
 
   it('should sync buffers data', function (done) {
-    testListProperty('buffers', done);
+    testCollectionProperty('buffers', done);
   });
 
   it('should sync bufferViews data', function (done) {
-    testListProperty('bufferViews', done);
+    testCollectionProperty('bufferViews', done);
   });
 
   it('should sync cameras data', function (done) {
-    testListProperty('cameras', done);
+    testCollectionProperty('cameras', done);
   });
 
   it('should sync images data', function (done) {
-    testListProperty('images', done);
+    testCollectionProperty('images', done);
   });
 
   it('should sync materials data', function (done) {
-    testListProperty('materials', done);
+    testCollectionProperty('materials', done);
   });
 
   it('should sync meshes data', function (done) {
-    testListProperty('meshes', done);
+    testCollectionProperty('meshes', done);
   });
 
   it('should sync nodes data', function (done) {
-    testListProperty('nodes', done);
+    testCollectionProperty('nodes', done);
   });
 
   it('should sync samplers data', function (done) {
-    testListProperty('samplers', done);
+    testCollectionProperty('samplers', done);
   });
 
   it('should sync scene data', function (done) {
@@ -127,15 +168,15 @@ describe('Project', function () {
   });
 
   it('should sync scenes data', function (done) {
-    testListProperty('scenes', done);
+    testCollectionProperty('scenes', done);
   });
 
   it('should sync skins data', function (done) {
-    testListProperty('skins', done);
+    testCollectionProperty('skins', done);
   });
 
   it('should sync textures data', function (done) {
-    testListProperty('textures', done);
+    testCollectionProperty('textures', done);
   });
 
   it('should sync extensions data', function (done) {
