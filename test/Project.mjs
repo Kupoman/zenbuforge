@@ -4,8 +4,7 @@ import Project from '../lib/Project.mjs';
 
 function testListProperty(key, done) {
   const proj = new Project();
-  proj[key].observeDeep(() => {
-    done(); });
+  proj[key].observeDeep(() => done());
   proj[key].push(['test']);
 }
 
@@ -38,14 +37,16 @@ function testValueProperty(key, done) {
   proj.ymap.set(key, 'value');
 }
 
-function makeNode(name) {
+function makeNodeGltf(name) {
   return {
-    name,
-    extensions: {
-      ZF_id: {
-        id: name,
+    nodes: [{
+      name,
+      extensions: {
+        ZF_id: {
+          id: name,
+        },
       },
-    },
+    }],
   };
 }
 
@@ -59,32 +60,44 @@ describe('Project', function () {
   });
 
   describe('.observe()', function () {
-    it('should generate actions', function () {
+    it('should generate add actions', function () {
       const proj = new Project();
-      const node = makeNode('test');
-      let count = 0;
+      const gltf = makeNodeGltf('test');
       proj.observe((event) => {
         assert.equal(event.key, 'nodes');
         assert.equal(event.id, 'test');
-        if (count === 0) {
-          assert.equal(event.action, 'add');
-          assert.deepEqual(event.data, node);
-        } else if (count === 1) {
-          const expected = JSON.parse(JSON.stringify(node));
-          expected.name = 'new name';
-          node.name = 'new name';
-          assert.equal(event.action, 'update');
-          assert.deepEqual(event.data, expected);
-        } else if (count === 2) {
-          assert.equal(event.action, 'delete');
-          assert.equal(event.data, null);
-        } else {
-          assert(false, 'Too many events');
-        }
-        count += 1;
+        assert.equal(event.action, 'add');
+        assert.deepEqual(event.data, gltf.nodes[0]);
       });
-      proj.mergeJSON({ nodes: [node] });
+      proj.mergeJSON(gltf);
+    });
+
+    it('should generate update actions', function () {
+      const proj = new Project();
+      const gltf = makeNodeGltf('test');
+      proj.mergeJSON(gltf);
+      proj.observe((event) => {
+        assert.equal(event.key, 'nodes');
+        assert.equal(event.id, 'test');
+        const expected = JSON.parse(JSON.stringify(gltf.nodes[0]));
+        expected.name = 'new name';
+        assert.equal(event.action, 'update');
+        assert.deepEqual(event.data, expected);
+      });
       proj.nodes.get('test').set('name', 'new name');
+    });
+
+    it('should generate delete actions', function () {
+      const proj = new Project();
+      const node = makeNodeGltf('test');
+      proj.mergeJSON(node);
+      proj.nodes.get('test').set('name', 'new name');
+      proj.observe((event) => {
+        assert.equal(event.key, 'nodes');
+        assert.equal(event.id, 'test');
+        assert.equal(event.action, 'delete');
+        assert.equal(event.gltf, null);
+      });
       proj.nodes.delete('test');
     });
   });
@@ -97,8 +110,8 @@ describe('Project', function () {
         count += 1;
         assert.equal(proj[event.key].size, count);
       });
-      proj.mergeJSON({ nodes: [makeNode('test')] });
-      proj.mergeJSON({ nodes: [makeNode('test2')] });
+      proj.mergeJSON([makeNodeGltf('test')]);
+      proj.mergeJSON([makeNodeGltf('test2')]);
     });
 
     it('should replace existing items', function () {
@@ -106,8 +119,8 @@ describe('Project', function () {
       proj.observe((event) => {
         assert.equal(proj[event.key].size, 1);
       });
-      proj.mergeJSON({ nodes: [makeNode('test')] });
-      proj.mergeJSON({ nodes: [makeNode('test')] });
+      proj.mergeJSON([makeNodeGltf('test')]);
+      proj.mergeJSON([makeNodeGltf('test')]);
     });
   });
 
