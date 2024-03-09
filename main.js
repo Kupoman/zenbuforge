@@ -10,14 +10,21 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+const emptyGltf = JSON.stringify({
+  asset: {
+    version: '2.0',
+  },
+});
+
 Promise.resolve()
   .then(() => zenbuforge.init())
   .then(() => {
-    const urlBase = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/';
-    return fetch(`${urlBase}/Sponza.gltf`)
+    const urlBase = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Box/glTF-Embedded/';
+    return fetch(`${urlBase}/Box.gltf`)
       .then((response) => response.json())
       .then((json) => zenbuforge.load(json, urlBase));
   })
+  //.then(() => zenbuforge.load(emptyGltf, ''))
   .then(() => {
     loop();
   });
