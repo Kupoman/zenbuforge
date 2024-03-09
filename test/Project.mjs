@@ -2,39 +2,60 @@ import assert from 'assert';
 
 import Project from '../lib/Project.mjs';
 
+function makeProject() {
+  const persistence = {
+    init: () => Promise.resolve(),
+  };
+  const project = new Project({
+    persistence,
+  });
+
+  return Promise.resolve()
+    .then(() => project.init())
+    .then(() => project);
+}
+
 function testListProperty(key, done) {
-  const proj = new Project();
-  proj[key].observeDeep(() => done());
-  proj[key].push(['test']);
+  return makeProject()
+    .then((proj) => {
+      proj[key].observeDeep(() => done());
+      proj[key].push(['test']);
+    });
 }
 
 function testCollectionProperty(key, done) {
-  const proj = new Project();
-  const data = { name: 'test' };
-  proj.addResource(key, data);
+  return makeProject()
+    .then((proj) => {
+      const data = { name: 'test' };
+      proj.addResource(key, data);
 
-  proj[key].observeDeep(() => {
-    done();
-  });
-  proj[key].forEach((value) => {
-    value.set('name', 'new name');
-  });
+      proj[key].observeDeep(() => {
+        done();
+      });
+      proj[key].forEach((value) => {
+        value.set('name', 'new name');
+      });
+    });
 }
 
 function testMapProperty(key, done) {
-  const proj = new Project();
-  proj[key].observeDeep(() => {
-    done();
-  });
-  proj[key].set('key', 'value');
+  return makeProject()
+    .then((proj) => {
+      proj[key].observeDeep(() => {
+        done();
+      });
+      proj[key].set('key', 'value');
+    });
 }
 
 function testValueProperty(key, done) {
-  const proj = new Project();
-  proj.ymap.observeDeep(() => {
-    done();
-  });
-  proj.ymap.set(key, 'value');
+  return makeProject()
+    .then((proj) => {
+      proj.ymap.observeDeep(() => {
+        done();
+      });
+      proj.ymap.set(key, 'value');
+    });
 }
 
 function makeNodeGltf(name) {
@@ -53,74 +74,86 @@ function makeNodeGltf(name) {
 describe('Project', function () {
   describe('.toJSON()', function () {
     it('should return JSON object', function () {
-      const proj = new Project();
-      const json = proj.toJSON();
-      assert.equal(json.asset.version, '2.0');
+      return makeProject()
+        .then((proj) => {
+          const json = proj.toJSON();
+          assert.equal(json.asset.version, '2.0');
+        });
     });
   });
 
   describe('.observe()', function () {
     it('should generate add actions', function () {
-      const proj = new Project();
-      const gltf = makeNodeGltf('test');
-      proj.observe((event) => {
-        assert.equal(event.key, 'nodes');
-        assert.equal(event.id, 'test');
-        assert.equal(event.action, 'add');
-        assert.deepEqual(event.data, gltf.nodes[0]);
-      });
-      proj.mergeJSON(gltf);
+      return makeProject()
+        .then((proj) => {
+          const gltf = makeNodeGltf('test');
+          proj.observe((event) => {
+            assert.equal(event.key, 'nodes');
+            assert.equal(event.id, 'test');
+            assert.equal(event.action, 'add');
+            assert.deepEqual(event.data, gltf.nodes[0]);
+          });
+          proj.mergeJSON(gltf);
+        });
     });
 
     it('should generate update actions', function () {
-      const proj = new Project();
-      const gltf = makeNodeGltf('test');
-      proj.mergeJSON(gltf);
-      proj.observe((event) => {
-        assert.equal(event.key, 'nodes');
-        assert.equal(event.id, 'test');
-        const expected = JSON.parse(JSON.stringify(gltf.nodes[0]));
-        expected.name = 'new name';
-        assert.equal(event.action, 'update');
-        assert.deepEqual(event.data, expected);
-      });
-      proj.nodes.get('test').set('name', 'new name');
+      return makeProject()
+        .then((proj) => {
+          const gltf = makeNodeGltf('test');
+          proj.mergeJSON(gltf);
+          proj.observe((event) => {
+            assert.equal(event.key, 'nodes');
+            assert.equal(event.id, 'test');
+            const expected = JSON.parse(JSON.stringify(gltf.nodes[0]));
+            expected.name = 'new name';
+            assert.equal(event.action, 'update');
+            assert.deepEqual(event.data, expected);
+          });
+          proj.nodes.get('test').set('name', 'new name');
+        });
     });
 
     it('should generate delete actions', function () {
-      const proj = new Project();
-      const node = makeNodeGltf('test');
-      proj.mergeJSON(node);
-      proj.nodes.get('test').set('name', 'new name');
-      proj.observe((event) => {
-        assert.equal(event.key, 'nodes');
-        assert.equal(event.id, 'test');
-        assert.equal(event.action, 'delete');
-        assert.equal(event.gltf, null);
-      });
-      proj.nodes.delete('test');
+      return makeProject()
+        .then((proj) => {
+          const node = makeNodeGltf('test');
+          proj.mergeJSON(node);
+          proj.nodes.get('test').set('name', 'new name');
+          proj.observe((event) => {
+            assert.equal(event.key, 'nodes');
+            assert.equal(event.id, 'test');
+            assert.equal(event.action, 'delete');
+            assert.equal(event.gltf, null);
+          });
+          proj.nodes.delete('test');
+        });
     });
   });
 
   describe('.mergeJSON()', function () {
     it('should append new items', function () {
-      const proj = new Project();
-      let count = 0;
-      proj.observe((event) => {
-        count += 1;
-        assert.equal(proj[event.key].size, count);
-      });
-      proj.mergeJSON([makeNodeGltf('test')]);
-      proj.mergeJSON([makeNodeGltf('test2')]);
+      return makeProject()
+        .then((proj) => {
+          let count = 0;
+          proj.observe((event) => {
+            count += 1;
+            assert.equal(proj[event.key].size, count);
+          });
+          proj.mergeJSON([makeNodeGltf('test')]);
+          proj.mergeJSON([makeNodeGltf('test2')]);
+        });
     });
 
     it('should replace existing items', function () {
-      const proj = new Project();
-      proj.observe((event) => {
-        assert.equal(proj[event.key].size, 1);
-      });
-      proj.mergeJSON([makeNodeGltf('test')]);
-      proj.mergeJSON([makeNodeGltf('test')]);
+      return makeProject()
+        .then((proj) => {
+          proj.observe((event) => {
+            assert.equal(proj[event.key].size, 1);
+          });
+          proj.mergeJSON([makeNodeGltf('test')]);
+          proj.mergeJSON([makeNodeGltf('test')]);
+        });
     });
   });
 
