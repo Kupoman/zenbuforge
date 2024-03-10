@@ -2794,6 +2794,7 @@ class GLTFParser {
 		let dependency = this.cache.get( cacheKey );
 
 		if ( ! dependency ) {
+			console.log('CACHE MISS');
 
 			switch ( type ) {
 
@@ -3383,40 +3384,40 @@ class GLTFParser {
 		}
 
 		// Clone the material if it will be modified
-		if ( useDerivativeTangents || useVertexColors || useFlatShading ) {
+		//if ( useDerivativeTangents || useVertexColors || useFlatShading ) {
 
-			let cacheKey = 'ClonedMaterial:' + material.uuid + ':';
+		//  let cacheKey = 'ClonedMaterial:' + material.uuid + ':';
 
-			if ( useDerivativeTangents ) cacheKey += 'derivative-tangents:';
-			if ( useVertexColors ) cacheKey += 'vertex-colors:';
-			if ( useFlatShading ) cacheKey += 'flat-shading:';
+		//  if ( useDerivativeTangents ) cacheKey += 'derivative-tangents:';
+		//  if ( useVertexColors ) cacheKey += 'vertex-colors:';
+		//  if ( useFlatShading ) cacheKey += 'flat-shading:';
 
-			let cachedMaterial = this.cache.get( cacheKey );
+		//  let cachedMaterial = this.cache.get( cacheKey );
 
-			if ( ! cachedMaterial ) {
+		//  if ( ! cachedMaterial ) {
 
-				cachedMaterial = material.clone();
+		//    cachedMaterial = material.clone();
 
-				if ( useVertexColors ) cachedMaterial.vertexColors = true;
-				if ( useFlatShading ) cachedMaterial.flatShading = true;
+		//    if ( useVertexColors ) cachedMaterial.vertexColors = true;
+		//    if ( useFlatShading ) cachedMaterial.flatShading = true;
 
-				if ( useDerivativeTangents ) {
+		//    if ( useDerivativeTangents ) {
 
-					// https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
-					if ( cachedMaterial.normalScale ) cachedMaterial.normalScale.y *= - 1;
-					if ( cachedMaterial.clearcoatNormalScale ) cachedMaterial.clearcoatNormalScale.y *= - 1;
+		//      // https://github.com/mrdoob/three.js/issues/11438#issuecomment-507003995
+		//      if ( cachedMaterial.normalScale ) cachedMaterial.normalScale.y *= - 1;
+		//      if ( cachedMaterial.clearcoatNormalScale ) cachedMaterial.clearcoatNormalScale.y *= - 1;
 
-				}
+		//    }
 
-				this.cache.add( cacheKey, cachedMaterial );
+		//    this.cache.add( cacheKey, cachedMaterial );
 
-				this.associations.set( cachedMaterial, this.associations.get( material ) );
+		//    this.associations.set( cachedMaterial, this.associations.get( material ) );
 
-			}
+		//  }
 
-			material = cachedMaterial;
+		//  material = cachedMaterial;
 
-		}
+		//}
 
 		mesh.material = material;
 
