@@ -2,7 +2,7 @@ import assert from 'assert';
 import { readFile } from 'fs/promises';
 
 import * as GltfUtils from '../lib/GltfUtils.mjs';
-import Renderer from '../lib/Renderer.mjs';
+import Renderer from '../lib/renderer/index.mjs';
 
 const gltfBox = GltfUtils.addIdExtension(JSON.parse(
   await readFile('./test/Box.gltf'),
