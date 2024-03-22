@@ -4,7 +4,8 @@
   "description": "One day I hope to see this project turn into a platform for collaborative game development. For now it is a simple glTF viewer.",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint --color lib",
+    "test": "mocha --color"
   },
   "author": "",
   "license": "ISC",
