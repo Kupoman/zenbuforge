@@ -21,6 +21,7 @@ describe('Utils', function () {
     it('should return false if input is missing', function () {
       assert.equal(false, Utils.isObjectChanged());
       assert.equal(false, Utils.isObjectChanged(null));
+      assert.equal(false, Utils.isObjectChanged({}, null));
       assert.equal(false, Utils.isObjectChanged(null, null));
     });
 
