@@ -1,0 +1,4 @@
+{
+  "name": "zf-renderer-threejs",
+  "main": "index.mjs"
+}

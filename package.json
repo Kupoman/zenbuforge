@@ -16,7 +16,9 @@
     "uuid": "^9.0.1",
     "y-indexeddb": "^9.0.12",
     "y-webrtc": "^10.2.6",
-    "yjs": "^13.6.10"
+    "yjs": "^13.6.10",
+    "zf-gui": "file:lib/gui",
+    "zf-renderer-threejs": "file:lib/renderer"
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.0.2",
