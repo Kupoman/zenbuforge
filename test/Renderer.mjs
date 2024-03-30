@@ -91,7 +91,8 @@ describe('Renderer', function () {
             }
 
             if (key === 'scenes') {
-              assert.equal(result.children.length, 1);
+              // There should be a mesh and a light (for now)
+              assert.equal(result.children.length, 2);
             }
           });
       });

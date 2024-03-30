@@ -1,7 +1,14 @@
+import Gui from 'zf-gui';
+import Renderer from 'zf-renderer-threejs';
+
 import Zenbuforge from './lib/Zenbuforge';
 
 const canvas = document.getElementById('viewport');
-const zenbuforge = new Zenbuforge(canvas);
+const zenbuforge = new Zenbuforge({
+  gui: new Gui(canvas),
+  renderer: new Renderer(canvas),
+});
+
 window.onresize = () => zenbuforge.resize(window.innerWidth, window.innerHeight);
 zenbuforge.resize(window.innerWidth, window.innerHeight);
 

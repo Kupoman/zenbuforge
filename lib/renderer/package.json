@@ -1,4 +1,8 @@
 {
   "name": "zf-renderer-threejs",
-  "main": "index.mjs"
+  "main": "index.mjs",
+  "dependencies": {
+    "data-uri-to-buffer": "^6.0.2",
+    "three": "^0.163.0"
+  }
 }
