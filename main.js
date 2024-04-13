@@ -7,15 +7,25 @@ class WebFileLoader {
   selectFile() {
     const input = document.createElement('input');
     input.type = 'file';
+    input.multiple = true;
+    let files = [];
     const promise = new Promise((resolve, reject) => {
       input.onchange = () => {
-        resolve(input.files);
+        files = [...input.files];
+        resolve();
       };
       input.onerror = (error) => reject(error);
     });
     input.click();
     return promise
-      .then((files) => files[0].arrayBuffer());
+      .then(() => {
+        const bufferPromises = files.map((f) => f.arrayBuffer());
+        return Promise.all(bufferPromises);
+      })
+      .then((buffers) => files.map((f, i) => ({
+        name: f.name,
+        buffer: new Uint8Array(buffers[i]),
+      })));
   }
 }
 
