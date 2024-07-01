@@ -132,27 +132,35 @@ describe('Project', function () {
   });
 
   describe('.mergeJSON()', function () {
-    it('should append new items', function () {
+    it('should clean up event listeners', function () {
+      let listenerCount = 0;
       return makeProject()
         .then((proj) => {
-          let count = 0;
-          proj.observe((event) => {
-            count += 1;
-            assert.equal(proj[event.key].size, count);
-          });
-          proj.mergeJSON([makeNodeGltf('test')]);
-          proj.mergeJSON([makeNodeGltf('test2')]);
+          listenerCount = Object.keys(proj._mergeCallbacks).length;
+          return proj;
+        })
+        .then((proj) => proj.mergeJSON({}))
+        .then((proj) => {
+          const currentCount = Object.keys(proj._mergeCallbacks).length;
+          assert.equal(currentCount, listenerCount);
+        });
+    });
+
+    it('should append new items', function () {
+      return makeProject()
+        .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
+        .then((proj) => proj.mergeJSON(makeNodeGltf('test2')))
+        .then((proj) => {
+          assert.equal(proj.nodes.size, 2);
         });
     });
 
     it('should replace existing items', function () {
       return makeProject()
+        .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
+        .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
         .then((proj) => {
-          proj.observe((event) => {
-            assert.equal(proj[event.key].size, 1);
-          });
-          proj.mergeJSON([makeNodeGltf('test')]);
-          proj.mergeJSON([makeNodeGltf('test')]);
+          assert.equal(proj.nodes.size, 1);
         });
     });
   });
