@@ -27,6 +27,36 @@ describe('YMapJsonHandler', function () {
     assert.equal(rootMap.get('child').get('child').get('key'), 'value');
   });
 
+  it('should get arrays', function () {
+    const doc = new Y.Doc();
+    const rootMap = doc.getMap('root');
+    const array = new Y.Array();
+    array.push(['value']);
+    rootMap.set('array', array);
+    const proxy = new Proxy(rootMap, YMapJsonHandler);
+    assert.equal(proxy.array[0], 'value');
+  });
+
+  it('should support array length property', function () {
+    const doc = new Y.Doc();
+    const rootMap = doc.getMap('root');
+    const array = new Y.Array();
+    array.push(['value']);
+    rootMap.set('array', array);
+    const proxy = new Proxy(rootMap, YMapJsonHandler);
+    assert.equal(proxy.array.length, 1);
+  });
+
+  it('should set arrays', function () {
+    const doc = new Y.Doc();
+    const rootMap = doc.getMap('root');
+    const proxy = new Proxy(rootMap, YMapJsonHandler);
+    proxy.array = [{ key: 'value' }];
+    assert.equal(rootMap.get('array').get(0).get('key'), 'value');
+    proxy.array[0] = { key: 'new' };
+    assert.equal(rootMap.get('array').get(0).get('key'), 'new');
+  });
+
   it('should delete properties', function () {
     const doc = new Y.Doc();
     const rootMap = doc.getMap('root');
@@ -42,5 +72,16 @@ describe('YMapJsonHandler', function () {
     rootMap.set('key', 'value');
     const proxy = new Proxy(rootMap, YMapJsonHandler);
     assert.deepEqual(Object.keys(proxy), ['key']);
+  });
+
+  it('should stringify', function () {
+    const doc = new Y.Doc();
+    const rootMap = doc.getMap('root');
+    const proxy = new Proxy(rootMap, YMapJsonHandler);
+    proxy.array = [
+      { key: 'one' },
+      { key: 'two' },
+    ];
+    assert.equal(JSON.stringify(proxy), '{"array":[{"key":"one"},{"key":"two"}]}');
   });
 });
