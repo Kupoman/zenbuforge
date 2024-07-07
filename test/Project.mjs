@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import * as jsonpatch from 'fast-json-patch';
+
 import Project from '../lib/Project.mjs';
 
 function makeProject() {
@@ -62,6 +64,7 @@ function makeNodeGltf(name) {
   return {
     nodes: [{
       name,
+      translation: [0.0, 0.0, 0.0],
       extensions: {
         ZF_id: {
           id: name,
@@ -161,6 +164,25 @@ describe('Project', function () {
         .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
         .then((proj) => {
           assert.equal(proj.nodes.size, 1);
+        });
+    });
+  });
+
+  describe('.applyJSONPatch()', function () {
+    it('should update property', function () {
+      return makeProject()
+        .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
+        .then((proj) => {
+          const patch = [{
+            op: 'replace',
+            path: '/project/nodes/test/translation',
+            value: [0.0, 1.0, 0.0],
+          }];
+
+          jsonpatch.default.applyPatch({ project: proj.jsonProxy }, patch, true, true, true);
+
+          assert.equal(proj.jsonProxy.nodes.test.translation[1], 1.0);
+          assert.equal(proj.ymap.get('nodes').get('test').get('translation').get(1), 1.0);
         });
     });
   });
