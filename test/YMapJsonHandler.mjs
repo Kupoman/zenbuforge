@@ -74,6 +74,15 @@ describe('YMapJsonHandler', function () {
     assert.deepEqual(Object.keys(proxy), ['key']);
   });
 
+  it('should iterate arrays', function () {
+    const doc = new Y.Doc();
+    const rootMap = doc.getMap('root');
+    const proxy = new Proxy(rootMap, YMapJsonHandler);
+    proxy.array = [{ key: 'value' }];
+
+    assert.deepEqual(proxy.array.map((i) => i.key), ['value']);
+  });
+
   it('should stringify', function () {
     const doc = new Y.Doc();
     const rootMap = doc.getMap('root');
