@@ -1,7 +1,5 @@
 import assert from 'assert';
 
-import * as jsonpatch from 'fast-json-patch';
-
 import Project from '../lib/Project.mjs';
 
 function makeProject() {
@@ -17,16 +15,16 @@ function makeProject() {
     .then(() => project);
 }
 
-function waitForUpdate(proj) {
+function waitForYUpdate(proj) {
   return new Promise((resolve) => {
-    proj.observe((event) => resolve(event));
+    proj.ymap.observeDeep((event) => resolve(event));
   });
 }
 
 function testListProperty(key) {
   return makeProject()
     .then((proj) => {
-      const wait = waitForUpdate(proj);
+      const wait = waitForYUpdate(proj);
       proj.jsonProxy[key].push('test');
       return wait;
     });
@@ -38,7 +36,7 @@ async function testCollectionProperty(key) {
     id: 'id',
     name: 'test',
   };
-  const wait = waitForUpdate(proj);
+  const wait = waitForYUpdate(proj);
 
   proj.jsonProxy[key].id.name = 'new name';
   await wait;
@@ -46,115 +44,46 @@ async function testCollectionProperty(key) {
 
 async function testMapProperty(key) {
   const proj = await makeProject();
-  const wait = waitForUpdate(proj);
+  const wait = waitForYUpdate(proj);
   proj.jsonProxy[key].key = 'value';
   await wait;
 }
 
 async function testValueProperty(key) {
   const proj = await makeProject();
-  const wait = waitForUpdate(proj);
+  const wait = waitForYUpdate(proj);
   proj.jsonProxy[key] = 'value';
   await wait;
 }
 
-function makeNodeGltf(name) {
-  return {
-    nodes: [{
-      name,
-      translation: [0.0, 0.0, 0.0],
-      extensions: {
-        ZF_id: {
-          id: name,
-        },
-      },
-    }],
-  };
-}
-
-function addResource(proj, key, json) {
-  const patch = [{
-    op: 'add',
-    path: `/${key}`,
-    value: json,
-  }];
-  jsonpatch.default.applyPatch(proj.jsonProxy, patch, true, true, true);
-}
-
 describe('Project', function () {
   describe('.toJSON()', function () {
-    it('should return JSON object', function () {
-      return makeProject()
-        .then((proj) => {
-          const json = proj.toJSON();
-          assert.equal(json.asset.version, '2.0');
-        });
-    });
-  });
-
-  describe('.observe()', function () {
-    it('should generate add actions', function () {
-      return makeProject()
-        .then((proj) => {
-          const gltf = makeNodeGltf('test');
-          proj.observe((event) => {
-            assert.equal(event.key, 'nodes');
-            assert.equal(event.id, 'test');
-            assert.equal(event.action, 'add');
-            assert.deepEqual(event.data, gltf.nodes[0]);
-          });
-          addResource(proj, 'nodes/test', gltf.nodes[0]);
-        });
-    });
-
-    it('should generate update actions', async function () {
+    it('should return JSON object', async function () {
       const proj = await makeProject();
-      const gltf = makeNodeGltf('test');
-      addResource(proj, 'nodes/test', gltf.nodes[0]);
-      const wait = waitForUpdate(proj);
-      proj.jsonProxy.nodes.test.name = 'new name';
-      return wait.then((event) => {
-        assert.equal(event.key, 'nodes');
-        assert.equal(event.id, 'test');
-        const expected = JSON.parse(JSON.stringify(gltf.nodes[0]));
-        expected.name = 'new name';
-        assert.equal(event.action, 'update');
-        assert.deepEqual(event.data, expected);
-      });
-    });
-
-    it('should generate delete actions', async function () {
-      const proj = await makeProject();
-      const node = makeNodeGltf('test');
-      addResource(proj, 'nodes/test', node.nodes[0]);
-      proj.jsonProxy.nodes.test.name = 'new name';
-      const wait = waitForUpdate(proj);
-      delete proj.jsonProxy.nodes.test;
-      return wait.then((event) => {
-        assert.equal(event.key, 'nodes');
-        assert.equal(event.id, 'test');
-        assert.equal(event.action, 'delete');
-        assert.equal(event.gltf, null);
-      });
+      const json = proj.toJSON();
+      assert.equal(json.asset.version, '2.0');
     });
   });
 
-  it.skip('should append new items', function () {
-    return makeProject()
-      .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
-      .then((proj) => proj.mergeJSON(makeNodeGltf('test2')))
-      .then((proj) => {
-        assert.equal(Object.keys(proj.jsonProxy.nodes).length, 2);
-      });
-  });
+  it('should return patch from .update()', async function () {
+    const proj = await makeProject();
+    const patch = [
+      {
+        op: 'add',
+        path: '/nodes/a',
+        value: {},
+      },
+      {
+        op: 'add',
+        path: '/nodes/b',
+        value: {},
+      },
+    ];
+    proj.patch([patch[0]]);
+    proj.patch([patch[1]]);
 
-  it.skip('should replace existing items', function () {
-    return makeProject()
-      .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
-      .then((proj) => proj.mergeJSON(makeNodeGltf('test')))
-      .then((proj) => {
-        assert.equal(Object.keys(proj.jsonProxy.nodes).length, 1);
-      });
+    assert.deepEqual(proj.update(), patch);
+    assert.deepEqual(proj.update(), []);
   });
 
   it('should sync extensionsUsed data', function () {
