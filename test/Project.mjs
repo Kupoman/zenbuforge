@@ -12,6 +12,7 @@ function makeProject() {
 
   return Promise.resolve()
     .then(() => project.init())
+    .then(() => project.update())
     .then(() => project);
 }
 
