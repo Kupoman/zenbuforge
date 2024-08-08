@@ -39,8 +39,8 @@ const zenbuforge = new Zenbuforge({
 window.onresize = () => zenbuforge.resize(window.innerWidth, window.innerHeight);
 zenbuforge.resize(window.innerWidth, window.innerHeight);
 
-function loop() {
-  zenbuforge.update();
+function loop(time) {
+  zenbuforge.update(time);
   requestAnimationFrame(loop);
 }
 
