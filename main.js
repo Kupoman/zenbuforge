@@ -1,7 +1,7 @@
 import Gui from 'zf-gui';
 import Renderer from 'zf-renderer-threejs';
 
-import Zenbuforge from './src/Zenbuforge';
+import Editor from './src/Editor';
 
 class WebFileLoader {
   selectFile() {
@@ -30,22 +30,22 @@ class WebFileLoader {
 }
 
 const canvas = document.getElementById('viewport');
-const zenbuforge = new Zenbuforge({
+const editor = new Editor({
   fileLoader: new WebFileLoader(),
   gui: new Gui(canvas),
   renderer: new Renderer(canvas),
 });
 
-window.onresize = () => zenbuforge.resize(window.innerWidth, window.innerHeight);
-zenbuforge.resize(window.innerWidth, window.innerHeight);
+window.onresize = () => editor.resize(window.innerWidth, window.innerHeight);
+editor.resize(window.innerWidth, window.innerHeight);
 
 function loop(time) {
-  zenbuforge.update(time);
+  editor.update(time);
   requestAnimationFrame(loop);
 }
 
 Promise.resolve()
-  .then(() => zenbuforge.init())
+  .then(() => editor.init())
   .then(() => {
     loop();
   });

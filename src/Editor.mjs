@@ -7,7 +7,7 @@ import Project from './Project.mjs';
 import ProjectList from './ProjectList.mjs';
 import Session from './Session.mjs';
 
-class Zenbuforge {
+class Editor {
   constructor(dependencies) {
     this.project = null;
     this.session = new Session({ id: 'zf-session' });
@@ -218,4 +218,4 @@ class Zenbuforge {
   }
 }
 
-export default Zenbuforge;
+export default Editor;
