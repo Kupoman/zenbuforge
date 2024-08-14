@@ -1,6 +1,6 @@
 {
   "name": "zenbuforge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "One day I hope to see this project turn into a platform for collaborative game development. For now it is a simple glTF viewer.",
   "main": "main.js",
   "scripts": {
