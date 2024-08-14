@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises';
 
 import Renderer from 'zf-renderer-threejs';
 
-import * as GltfUtils from '../lib/GltfUtils.mjs';
+import * as GltfUtils from '../src/GltfUtils.mjs';
 
 const gltfBox = GltfUtils.addIdExtension(JSON.parse(
   await readFile('./test/Box.gltf'),

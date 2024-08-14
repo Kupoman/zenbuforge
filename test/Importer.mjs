@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { readFile } from 'fs/promises';
 
-import Importer from '../lib/Importer.mjs';
+import Importer from '../src/Importer.mjs';
 
 async function loadFileMap(fileNames) {
   return Promise.all(fileNames.map((name) => Promise.resolve()

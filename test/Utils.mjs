@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import * as Utils from '../lib/Utils.mjs';
+import * as Utils from '../src/Utils.mjs';
 
 describe('Utils', function () {
   describe('.isDefined()', function () {

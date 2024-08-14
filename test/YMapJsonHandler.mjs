@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import * as Y from 'yjs';
 
-import YMapJsonHandler from '../lib/YMapJsonHandler.mjs';
+import YMapJsonHandler from '../src/YMapJsonHandler.mjs';
 
 describe('YMapJsonHandler', function () {
   it('should deep get from map', function () {

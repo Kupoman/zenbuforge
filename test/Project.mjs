@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import Project from '../lib/Project.mjs';
+import Project from '../src/Project.mjs';
 
 function makeProject() {
   const persistence = {

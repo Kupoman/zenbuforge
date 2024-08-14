@@ -1,7 +1,7 @@
 import Gui from 'zf-gui';
 import Renderer from 'zf-renderer-threejs';
 
-import Zenbuforge from './lib/Zenbuforge';
+import Zenbuforge from './src/Zenbuforge';
 
 class WebFileLoader {
   selectFile() {
