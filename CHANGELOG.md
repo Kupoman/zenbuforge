@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Set camera and light properties of nodes
 
+### Fixed
+
+- Cannot delete lights
+
 ### Changed
 
 - Swap camera up and down keys
