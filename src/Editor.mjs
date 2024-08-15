@@ -27,7 +27,7 @@ class Editor {
 
     const activeProjectId = this.session.jsonProxy.projectId;
     if (activeProjectId) {
-      await this.loadProject({ id: activeProjectId });
+      this.loadProject({ id: activeProjectId });
     }
   }
 
