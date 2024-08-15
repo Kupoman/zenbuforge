@@ -34,6 +34,11 @@ const editor = new Editor({
   fileLoader: new WebFileLoader(),
   gui: new Gui(canvas),
   renderer: new Renderer(canvas),
+  windowHandler: {
+    setProject(name) {
+      document.title = `Zenbuforge - ${name}`;
+    },
+  },
 });
 
 window.onresize = () => editor.resize(window.innerWidth, window.innerHeight);

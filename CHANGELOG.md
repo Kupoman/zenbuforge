@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Set camera and light properties of nodes
 - Set material of first primitive of meshes
+- Display current project in title
 
 ### Fixed
 

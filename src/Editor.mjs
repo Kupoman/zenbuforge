@@ -15,6 +15,7 @@ class Editor {
     this.gui = dependencies.gui;
     this.renderer = dependencies.renderer;
     this.fileLoader = dependencies.fileLoader;
+    this.windowHandler = dependencies.windowHandler;
     this.width = 0;
     this.height = 0;
     this.prevTime = 0;
@@ -36,6 +37,7 @@ class Editor {
     if (this.project) {
       this.project.destroy();
     }
+
     const projectDetails = this.projectList.jsonProxy.projects[id];
     this.project = new Project(projectDetails);
     return Promise.resolve()
@@ -212,6 +214,12 @@ class Editor {
     this.renderer.update(scene, this.width, this.height);
 
     this.gui.render();
+
+    const activeProjectId = this.session.jsonProxy.projectId;
+    const projectDetails = this.projectList.jsonProxy.projects[activeProjectId];
+    if (projectDetails && this.windowHandler) {
+      this.windowHandler.setProject(projectDetails.name);
+    }
   }
 
   resize(width, height) {
