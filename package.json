@@ -1,7 +1,7 @@
 {
   "name": "zenbuforge",
   "version": "0.2.0",
-  "description": "One day I hope to see this project turn into a platform for collaborative game development. For now it is a simple glTF viewer.",
+  "description": "3D collaborative level editor",
   "main": "main.js",
   "scripts": {
     "lint": "eslint --color lib",
@@ -14,7 +14,6 @@
     "@gltf-transform/extensions": "^3.10.1",
     "@gltf-transform/functions": "^3.10.1",
     "fast-json-patch": "^3.1.1",
-    "idb": "^8.0.0",
     "uuid": "^9.0.1",
     "y-indexeddb": "^9.0.12",
     "y-webrtc": "^10.3.0",
