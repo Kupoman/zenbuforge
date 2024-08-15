@@ -5,15 +5,30 @@
   "main": "main.js",
   "scripts": {
     "lint": "eslint --color lib",
-    "test": "mocha --color"
+    "test": "mocha --color",
+    "coverage": "c8 npm run test"
   },
   "author": "",
   "license": "ISC",
+  "c8": {
+    "all": true,
+    "reporter": [
+        "text",
+        "html"
+    ],
+    "include": [
+      "src/**"
+    ],
+    "exclude": [
+      "**/extern"
+    ]
+  },
   "dependencies": {
     "@gltf-transform/core": "^3.10.1",
     "@gltf-transform/extensions": "^3.10.1",
     "@gltf-transform/functions": "^3.10.1",
     "fast-json-patch": "^3.1.1",
+    "nyc": "^17.0.0",
     "uuid": "^9.0.1",
     "y-indexeddb": "^9.0.12",
     "y-webrtc": "^10.3.0",
@@ -23,6 +38,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.0.2",
+    "c8": "^10.1.2",
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.29.1",
