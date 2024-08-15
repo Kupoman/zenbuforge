@@ -3,8 +3,8 @@ import Renderer from 'zf-renderer-threejs';
 
 import Editor from './src/Editor';
 
-class WebFileLoader {
-  selectFile() {
+class WebFileHandler {
+  openFiles() {
     const input = document.createElement('input');
     input.type = 'file';
     input.multiple = true;
@@ -27,11 +27,29 @@ class WebFileLoader {
         buffer: new Uint8Array(buffers[i]),
       })));
   }
+
+  saveFile(data, filename) {
+    const file = new Blob([data], { type: 'model/gltf+json' });
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(file, filename);
+    } else {
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+    }
+  }
 }
 
 const canvas = document.getElementById('viewport');
 const editor = new Editor({
-  fileLoader: new WebFileLoader(),
+  fileHandler: new WebFileHandler(),
   gui: new Gui(canvas),
   renderer: new Renderer(canvas),
   windowHandler: {

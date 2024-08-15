@@ -3,6 +3,7 @@ import * as uuid from 'uuid';
 
 import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
+import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import ProjectList from './ProjectList.mjs';
 import Session from './Session.mjs';
@@ -14,11 +15,16 @@ class Editor {
     this.projectList = new ProjectList({ id: 'zf-projects' });
     this.gui = dependencies.gui;
     this.renderer = dependencies.renderer;
-    this.fileLoader = dependencies.fileLoader;
+    this.fileHandler = dependencies.fileHandler;
     this.windowHandler = dependencies.windowHandler;
     this.width = 0;
     this.height = 0;
     this.prevTime = 0;
+  }
+
+  getActiveProjectDetails() {
+    const activeProjectId = this.session.jsonProxy.projectId;
+    return this.projectList.jsonProxy.projects[activeProjectId];
   }
 
   async init() {
@@ -56,10 +62,18 @@ class Editor {
     return this.loadProject(params);
   }
 
-  loadFile() {
+  export() {
+    const projectDetails = this.getActiveProjectDetails();
+    const exporter = new Exporter();
+    return Promise.resolve()
+      .then(() => exporter.exportProject(this.project.jsonProxy))
+      .then(() => this.fileHandler.saveFile(exporter.results, projectDetails.name));
+  }
+
+  import() {
     const importer = new Importer();
     return Promise.resolve()
-      .then(() => this.fileLoader.selectFile())
+      .then(() => this.fileHandler.openFiles())
       .then((fileMap) => importer.processFileMap(fileMap))
       .then(() => {
         importer.errors.forEach((e) => console.error(e));
@@ -215,8 +229,7 @@ class Editor {
 
     this.gui.render();
 
-    const activeProjectId = this.session.jsonProxy.projectId;
-    const projectDetails = this.projectList.jsonProxy.projects[activeProjectId];
+    const projectDetails = this.getActiveProjectDetails();
     if (projectDetails && this.windowHandler) {
       this.windowHandler.setProject(projectDetails.name);
     }

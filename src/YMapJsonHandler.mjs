@@ -57,6 +57,18 @@ const YArrayJsonHandler = {
       return (content) => target.push([content]);
     }
 
+    if (key === 'includes') {
+      return (search) => {
+        let found = false;
+        target.forEach((value) => {
+          if (value === search) {
+            found = true;
+          }
+        });
+        return found;
+      };
+    }
+
     if (['map', 'forEach'].includes(key)) {
       return Array.prototype[key];
     }

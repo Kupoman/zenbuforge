@@ -29,6 +29,28 @@ class Project extends PersistedData {
         this.jsonProxy.extensions.KHR_lights_punctual ??= { lights: {} };
 
         this.jsonProxy.asset.version = '2.0';
+
+        const requiredExts = [
+          'ZF_id',
+          'KHR_lights_punctual',
+        ];
+        requiredExts.forEach((ext) => {
+          const array = this.jsonProxy.extensionsRequired;
+          if (!array.includes(ext)) {
+            array.push(ext);
+          }
+        });
+
+        const usedExts = [
+          'ZF_id',
+          'KHR_lights_punctual',
+        ];
+        usedExts.forEach((ext) => {
+          const array = this.jsonProxy.extensionsUsed;
+          if (!array.includes(ext)) {
+            array.push(ext);
+          }
+        });
       })
       .then(() => {
         if (!this.server) {
