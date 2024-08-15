@@ -5,8 +5,8 @@ This project is still in its very early stages and is not intended for anything 
 Everything in this project is subject to change.
 
 ## Viewport controls
-* Q: Move camera up
-* E: Move camera down
+* Q: Move camera down
+* E: Move camera up
 * W: Move camera forward
 * A: Move camera left
 * S: Move camera backward

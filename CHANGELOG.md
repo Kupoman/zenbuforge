@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Swap camera up and down keys
+
 ## [0.0.1] - 2024-08-14
 
 ### Added
