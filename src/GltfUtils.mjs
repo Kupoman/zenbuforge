@@ -188,3 +188,18 @@ export function ensureTRSNodes(data) {
     }
   });
 }
+
+export function ensureLightExtension(data) {
+  const local = data;
+  (local.nodes || []).forEach((node) => {
+    node.extensions ??= {};
+    node.extensions.KHR_lights_punctual ??= {};
+  });
+}
+
+export function normalize(data) {
+  this.addIdExtension(data);
+  this.initNames(data);
+  this.ensureTRSNodes(data);
+  this.ensureLightExtension(data);
+}

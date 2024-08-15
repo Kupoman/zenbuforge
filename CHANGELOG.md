@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Set camera and light properties of nodes
+
 ### Changed
 
 - Swap camera up and down keys

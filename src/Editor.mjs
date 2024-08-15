@@ -65,9 +65,7 @@ class Editor {
         const patch = [];
         (importer.results ?? []).forEach((result) => {
           const normalized = JSON.parse(JSON.stringify(result));
-          gltf.addIdExtension(normalized);
-          gltf.initNames(normalized);
-          gltf.ensureTRSNodes(normalized);
+          gltf.normalize(normalized);
 
           gltf.COLLECTION_PROPS.forEach((prop) => {
             (normalized[prop] ?? []).forEach((obj) => {
@@ -123,6 +121,10 @@ class Editor {
     if (kind === 'projects') {
       value.id = id;
       delete value.extensions;
+    }
+
+    if (kind === 'nodes') {
+      value.extensions.KHR_lights_punctual = {};
     }
 
     results.addUpdate({
