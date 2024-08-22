@@ -3,7 +3,7 @@ import Renderer from 'zf-renderer-threejs';
 
 import Editor from './src/Editor';
 
-class WebFileHandler {
+class WebSystem {
   openFiles() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -45,18 +45,17 @@ class WebFileHandler {
       }, 0);
     }
   }
+
+  setProject(name) {
+    document.title = `Zenbuforge - ${name}`;
+  }
 }
 
 const canvas = document.getElementById('viewport');
 const editor = new Editor({
-  fileHandler: new WebFileHandler(),
+  system: new WebSystem(),
   gui: new Gui(canvas),
   renderer: new Renderer(canvas),
-  windowHandler: {
-    setProject(name) {
-      document.title = `Zenbuforge - ${name}`;
-    },
-  },
 });
 
 window.onresize = () => editor.resize(window.innerWidth, window.innerHeight);

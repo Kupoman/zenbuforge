@@ -15,8 +15,7 @@ class Editor {
     this.projectList = new ProjectList({ id: 'zf-projects' });
     this.gui = dependencies.gui;
     this.renderer = dependencies.renderer;
-    this.fileHandler = dependencies.fileHandler;
-    this.windowHandler = dependencies.windowHandler;
+    this.system = dependencies.system;
     this.width = 0;
     this.height = 0;
     this.prevTime = 0;
@@ -67,13 +66,13 @@ class Editor {
     const exporter = new Exporter();
     return Promise.resolve()
       .then(() => exporter.exportProject(this.project.jsonProxy))
-      .then(() => this.fileHandler.saveFile(exporter.results, projectDetails.name));
+      .then(() => this.system.saveFile(exporter.results, projectDetails.name));
   }
 
   import() {
     const importer = new Importer();
     return Promise.resolve()
-      .then(() => this.fileHandler.openFiles())
+      .then(() => this.system.openFiles())
       .then((fileMap) => importer.processFileMap(fileMap))
       .then(() => {
         importer.errors.forEach((e) => console.error(e));
@@ -230,8 +229,8 @@ class Editor {
     this.gui.render();
 
     const projectDetails = this.getActiveProjectDetails();
-    if (projectDetails && this.windowHandler) {
-      this.windowHandler.setProject(projectDetails.name);
+    if (projectDetails && this.system) {
+      this.system.setProject(projectDetails.name);
     }
   }
 
