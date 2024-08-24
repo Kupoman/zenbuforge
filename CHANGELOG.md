@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cannot delete lights
 - Scene does not render on page load
+- Improve GUI event capturing
 
 ### Changed
 
