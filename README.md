@@ -12,6 +12,8 @@ Everything in this project is subject to change.
 * S: Move camera backward
 * D: Move camera right
 * Arrow Keys: Rotate camera
+* Left Mouse: Select object
+* Right Mouse: Rotate camera
 
 ## Real time collaboration
 Real time collaboration is done using WebRTC and Yjs.

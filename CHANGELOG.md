@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set material of first primitive of meshes
 - Display current project in title
 - Raw project export
+- Select objects with left mouse
 
 ### Fixed
 

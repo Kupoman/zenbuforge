@@ -4,6 +4,19 @@ import Renderer from 'zf-renderer-threejs';
 import Editor from './src/Editor';
 
 class WebSystem {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.events = [];
+
+    this.canvas.addEventListener('click', (event) => {
+      this.events.push({
+        type: 'MouseButtonEvent',
+        x: event.x,
+        y: event.y,
+      });
+    });
+  }
+
   openFiles() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -53,7 +66,7 @@ class WebSystem {
 
 const canvas = document.getElementById('viewport');
 const editor = new Editor({
-  system: new WebSystem(),
+  system: new WebSystem(canvas),
   gui: new Gui(canvas),
   renderer: new Renderer(canvas),
 });

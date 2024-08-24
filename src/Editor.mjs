@@ -187,6 +187,24 @@ class Editor {
     });
   }
 
+  pickSelection(params, results) {
+    const position = { x: params.x, y: params.y };
+    const selection = this.renderer.pick(position);
+    if (!selection) {
+      return;
+    }
+
+    results.addUpdate({
+      op: 'replace',
+      path: '/session/selections',
+      value: [{
+        kind: 'nodes',
+        key: '/project/nodes',
+        id: selection,
+      }],
+    });
+  }
+
   handleRpc(rpc, results) {
     if (!(rpc.method in this)) {
       console.error(`No function ${rpc.method}`);
@@ -212,12 +230,27 @@ class Editor {
       this.height,
     );
 
-    results.procedureCalls.forEach((c) => this.handleRpc(c, results));
-    jsonpatch.applyPatch(model, results.updates, true, true, true);
-
     if (!this.gui.isActive()) {
       this.renderer.controls.update(dt);
+
+      while (this.system.events.length) {
+        const event = this.system.events.shift();
+        if (event.type === 'MouseButtonEvent') {
+          results.addCall({
+            method: 'pickSelection',
+            params: {
+              x: event.x / this.width,
+              y: event.y / this.height,
+            },
+          });
+        }
+      }
+    } else {
+      this.system.events = [];
     }
+
+    results.procedureCalls.forEach((c) => this.handleRpc(c, results));
+    jsonpatch.applyPatch(model, results.updates, true, true, true);
 
     let scene = null;
     if (this.project) {
