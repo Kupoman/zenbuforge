@@ -3,6 +3,8 @@
 import { PlatformIO, VertexLayout } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 
+import * as gltfUtils from './GltfUtils.mjs';
+
 const gltfIo = new PlatformIO();
 gltfIo.registerExtensions(ALL_EXTENSIONS);
 gltfIo.setVertexLayout(VertexLayout.SEPARATE);
@@ -27,6 +29,18 @@ class Exporter {
   async exportProject(project) {
     const encoder = new TextEncoder();
     this.results = encoder.encode(JSON.stringify(project, null, 2));
+    return this;
+  }
+
+  async exportGltf(project) {
+    const gltf = JSON.parse(JSON.stringify(project));
+    gltfUtils.removeIdExtension(gltf);
+
+    const doc = await gltfIo.readJSON({
+      json: gltf,
+    });
+
+    this.results = await gltfIo.writeBinary(doc);
     return this;
   }
 }

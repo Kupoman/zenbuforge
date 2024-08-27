@@ -41,8 +41,8 @@ class WebSystem {
       })));
   }
 
-  saveFile(data, filename) {
-    const file = new Blob([data], { type: 'model/gltf+json' });
+  saveFile(data, filename, type) {
+    const file = new Blob([data], { type });
     if (window.navigator.msSaveOrOpenBlob) {
       window.navigator.msSaveOrOpenBlob(file, filename);
     } else {

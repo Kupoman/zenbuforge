@@ -66,7 +66,23 @@ class Editor {
     const exporter = new Exporter();
     return Promise.resolve()
       .then(() => exporter.exportProject(this.project.jsonProxy))
-      .then(() => this.system.saveFile(exporter.results, projectDetails.name));
+      .then(() => this.system.saveFile(
+        exporter.results,
+        `${projectDetails.name}.gltf`,
+        'model/gltf+json',
+      ));
+  }
+
+  exportGltf() {
+    const projectDetails = this.getActiveProjectDetails();
+    const exporter = new Exporter();
+    return Promise.resolve()
+      .then(() => exporter.exportGltf(this.project.jsonProxy))
+      .then(() => this.system.saveFile(
+        exporter.results,
+        `${projectDetails.name}.glb`,
+        'application/gltf-binary',
+      ));
   }
 
   import() {

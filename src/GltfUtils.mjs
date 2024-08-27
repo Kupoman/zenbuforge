@@ -168,6 +168,94 @@ export function addIdExtension(data) {
   return local;
 }
 
+export function removeIdExtension(data) {
+  const idToIndex = {};
+
+  const mapToArray = (obj, prop) => {
+    idToIndex[prop] = {};
+    const map = obj[prop];
+    const array = [];
+    Object.entries(map ?? {}).forEach(([id, value]) => {
+      const length = array.push(value);
+      idToIndex[prop][id] = length - 1;
+    });
+    obj[prop] = array;
+  };
+
+  COLLECTION_PROPS.forEach((prop) => mapToArray(data, prop));
+  mapToArray(data.extensions.KHR_lights_punctual, 'lights');
+
+
+  const commonTransform = (resource) => {
+    resource.extras ??= {};
+    resource.extras.id = resource.extensions.ZF_id.id;
+    delete resource.extensions.ZF_id;
+  };
+
+  const updateReference = (obj, key, prop) => {
+    const reference = obj.extensions.ZF_id[prop];
+
+    if (!reference) {
+      return;
+    }
+
+    if (Array.isArray(reference)) {
+      reference.forEach((r, i) => {
+        obj[prop][i] = idToIndex[key][r];
+      });
+      return;
+    }
+
+    obj[prop] = idToIndex[key][reference];
+  };
+
+  (data.bufferViews ?? []).forEach((bufferView) => {
+    updateReference(bufferView, 'buffers', 'buffer');
+    commonTransform(bufferView);
+  });
+
+  (data.accessors ?? []).forEach((accessor) => {
+    updateReference(accessor, 'bufferViews', 'bufferView');
+    commonTransform(accessor);
+  });
+
+  (data.textures ?? []).forEach((texture) => {
+    updateReference(texture, 'images', 'source');
+    updateReference(texture, 'samplers', 'sampler');
+    commonTransform(texture);
+  });
+
+  (data.materials ?? []).forEach((material) => {
+    // TODO: deep props
+    commonTransform(material);
+  });
+
+  (data.meshes ?? []).forEach((mesh) => {
+    // TODO: deep props
+    commonTransform(mesh);
+  });
+
+  (data.nodes ?? []).forEach((node) => {
+    if ('KHR_lights_punctual' in node.extensions) {
+      node.extensions.KHR_lights_punctual.light = idToIndex.lights[
+        node.extensions.KHR_lights_punctual.light
+      ];
+    }
+    updateReference(node, 'meshes', 'mesh');
+    updateReference(node, 'cameras', 'camera');
+    updateReference(node, 'nodes', 'children');
+    commonTransform(node);
+  });
+
+  (data.scenes ?? []).forEach((scene) => {
+    updateReference(scene, 'nodes', 'nodes');
+    commonTransform(scene);
+  });
+
+  data.extensionsRequired = data.extensionsRequired.filter((i) => i !== 'ZF_id');
+  data.extensionsUsed = data.extensionsUsed.filter((i) => i !== 'ZF_id');
+}
+
 export function initNames(data) {
   const local = data;
   this.COLLECTION_PROPS.forEach((prop) => {

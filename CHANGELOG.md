@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Raw project export
 - Select objects with left mouse
 - Remaining material properties
+- glTF export
 
 ### Fixed
 
