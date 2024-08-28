@@ -130,11 +130,7 @@ class Editor {
     const id = uuid.v4();
     const value = {
       name: id,
-      extensions: {
-        ZF_id: {
-          id,
-        },
-      },
+      extras: { id },
     };
 
     if (kind === 'meshes') {

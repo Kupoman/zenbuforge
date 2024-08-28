@@ -110,10 +110,7 @@ const REFERENCE_PROPS = [
 ];
 
 export function getId(obj) {
-  if ('get' in obj) {
-    return obj.get('extensions').ZF_id.id;
-  }
-  return obj?.extensions?.ZF_id?.id;
+  return obj?.extras?.id;
 }
 
 export function toMapRefs(obj) {
@@ -122,6 +119,11 @@ export function toMapRefs(obj) {
       r.extras ??= {};
       r.extras.id ??= uuid.v4();
     });
+  });
+
+  obj.extensions.KHR_lights_punctual.lights.forEach((r) => {
+    r.extras ??= {};
+    r.extras.id ??= uuid.v4();
   });
 
   REFERENCE_PROPS.forEach((ref) => {
@@ -361,7 +363,7 @@ export function initNames(data) {
   const local = data;
   this.COLLECTION_PROPS.forEach((prop) => {
     (local[prop] || []).forEach((item) => {
-      item.name = item.name || '';
+      item.name = item.name || item.extras.id;
     });
   });
 }
@@ -387,7 +389,7 @@ export function ensureLightExtension(data) {
 }
 
 export function normalize(data) {
-  this.addIdExtension(data);
+  this.toMapRefs(data);
   this.initNames(data);
   this.ensureTRSNodes(data);
   this.ensureLightExtension(data);

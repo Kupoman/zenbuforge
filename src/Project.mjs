@@ -31,7 +31,6 @@ class Project extends PersistedData {
         this.jsonProxy.asset.version = '2.0';
 
         const requiredExts = [
-          'ZF_id',
           'KHR_lights_punctual',
         ];
         requiredExts.forEach((ext) => {
@@ -42,7 +41,6 @@ class Project extends PersistedData {
         });
 
         const usedExts = [
-          'ZF_id',
           'KHR_lights_punctual',
         ];
         usedExts.forEach((ext) => {
