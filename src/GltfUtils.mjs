@@ -386,11 +386,15 @@ export function ensureLightExtension(data) {
     node.extensions ??= {};
     node.extensions.KHR_lights_punctual ??= {};
   });
+  local.extensions ??= {};
+  local.extensions.KHR_lights_punctual ??= {
+    lights: [],
+  };
 }
 
 export function normalize(data) {
+  this.ensureLightExtension(data);
   this.toMapRefs(data);
   this.initNames(data);
   this.ensureTRSNodes(data);
-  this.ensureLightExtension(data);
 }

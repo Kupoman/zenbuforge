@@ -19,6 +19,7 @@ describe('GltfUtils', function () {
           },
         ],
       };
+      GltfUtils.ensureLightExtension(obj);
       return obj;
     }
 
@@ -26,6 +27,7 @@ describe('GltfUtils', function () {
       const noExtras = {
         nodes: [{}],
       };
+      GltfUtils.ensureLightExtension(noExtras);
       GltfUtils.toMapRefs(noExtras);
       assert(Object.values(noExtras.nodes)[0].extras.id);
       const withExtras = {
@@ -35,6 +37,7 @@ describe('GltfUtils', function () {
           },
         }],
       };
+      GltfUtils.ensureLightExtension(withExtras);
       GltfUtils.toMapRefs(withExtras);
       assert(Object.values(withExtras.nodes)[0].extras.id);
       assert.equal('bar', withExtras.nodes[0].extras.foo);
@@ -153,7 +156,7 @@ describe('GltfUtils', function () {
     });
 
     it('should update nodes.light', function () {
-      const obj = makeTestObj('nodes', 'extensions', 'lights');
+      const obj = makeTestObj('nodes', '', 'lights');
       obj.nodes[0].extensions = {
         KHR_lights_punctual: {
           light: 0,
