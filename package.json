@@ -13,8 +13,8 @@
   "c8": {
     "all": true,
     "reporter": [
-        "text",
-        "html"
+      "text",
+      "html"
     ],
     "include": [
       "src/**"
@@ -28,6 +28,7 @@
     "@gltf-transform/extensions": "^3.10.1",
     "@gltf-transform/functions": "^3.10.1",
     "fast-json-patch": "^3.1.1",
+    "jsonpath": "^1.1.1",
     "nyc": "^17.0.0",
     "uuid": "^9.0.1",
     "y-indexeddb": "^9.0.12",

@@ -1,3 +1,5 @@
+import JSONPath from 'jsonpath';
+
 import * as uuid from 'uuid';
 
 import * as utils from './Utils.mjs';
@@ -36,11 +38,110 @@ export const VALUE_PROPS = [
   'scene',
 ];
 
+const REFERENCE_PROPS = [
+  {
+    path: '$.bufferViews[*].buffer',
+    collection: 'buffers',
+  },
+  {
+    path: '$.accessors[*].bufferView',
+    collection: 'bufferViews',
+  },
+  {
+    path: '$.textures[*].source',
+    collection: 'images',
+  },
+  {
+    path: '$.textures[*].sampler',
+    collection: 'samplers',
+  },
+  {
+    path: '$.materials[*].normalTexture.index',
+    collection: 'textures',
+  },
+  {
+    path: '$.materials[*].occlusionTexture.index',
+    collection: 'textures',
+  },
+  {
+    path: '$.materials[*].emissiveTexture.index',
+    collection: 'textures',
+  },
+  {
+    path: '$.materials[*].pbrMetallicRoughness.baseColorTexture.index',
+    collection: 'textures',
+  },
+  {
+    path: '$.materials[*].pbrMetallicRoughness.metallicRoughnessTexture.index',
+    collection: 'textures',
+  },
+  {
+    path: '$.meshes[*].primitives[*].material',
+    collection: 'materials',
+  },
+  {
+    path: '$.meshes[*].primitives[*].indices',
+    collection: 'accessors',
+  },
+  {
+    path: '$.meshes[*].primitives[*].attributes[*]',
+    collection: 'accessors',
+  },
+  {
+    path: '$.nodes[*].mesh',
+    collection: 'meshes',
+  },
+  {
+    path: '$.nodes[*].camera',
+    collection: 'cameras',
+  },
+  {
+    path: '$.nodes[*].extensions.KHR_lights_punctual.light',
+    collection: 'extensions.KHR_lights_punctual.lights',
+  },
+  {
+    path: '$.nodes[*].children[*]',
+    collection: 'nodes',
+  },
+  {
+    path: '$.scenes[*].nodes[*]',
+    collection: 'nodes',
+  },
+];
+
 export function getId(obj) {
   if ('get' in obj) {
     return obj.get('extensions').ZF_id.id;
   }
   return obj?.extensions?.ZF_id?.id;
+}
+
+export function toMapRefs(obj) {
+  COLLECTION_PROPS.forEach((prop) => {
+    (obj[prop] ?? []).forEach((r) => {
+      r.extras ??= {};
+      r.extras.id ??= uuid.v4();
+    });
+  });
+
+  REFERENCE_PROPS.forEach((ref) => {
+    const nodes = JSONPath.nodes(obj, ref.path);
+    nodes.forEach((node) => {
+      let parent = obj;
+      node.path.slice(1, -1).forEach((i) => {
+        parent = parent[i];
+      });
+
+      let collection = obj;
+      ref.collection.split('.').forEach((i) => {
+        collection = collection[i];
+      });
+      const refObj = collection[node.value];
+
+      const refProp = node.path[node.path.length - 1];
+      parent[refProp] = refObj.extras.id;
+    });
+  });
 }
 
 export function addIdExtension(data) {
