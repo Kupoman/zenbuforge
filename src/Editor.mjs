@@ -151,7 +151,9 @@ class Editor {
     }
 
     if (kind === 'nodes') {
-      value.extensions.KHR_lights_punctual = {};
+      value.extensions = {
+        KHR_lights_punctual: {},
+      };
     }
 
     results.addUpdate({
