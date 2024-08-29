@@ -11,7 +11,9 @@ class Session extends PersistedData {
   }
 
   setProject(id) {
-    this.jsonProxy.selections = [];
+    if (id !== this.jsonProxy.projectId) {
+      this.jsonProxy.selections = [];
+    }
     this.jsonProxy.projectId = id;
   }
 }
