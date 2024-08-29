@@ -34,7 +34,13 @@ class Exporter {
 
   async exportGltf(project) {
     const gltf = JSON.parse(JSON.stringify(project));
-    gltfUtils.removeIdExtension(gltf);
+    gltfUtils.COLLECTION_PROPS.forEach((prop) => {
+      gltf[prop] = Object.values(gltf[prop] ?? {});
+    });
+    gltf.extensions.KHR_lights_punctual.lights = Object.values(
+      gltf.extensions.KHR_lights_punctual.lights ?? {},
+    );
+    gltfUtils.toArrayRefs(gltf);
 
     const doc = await gltfIo.readJSON({
       json: gltf,
