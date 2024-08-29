@@ -48,7 +48,11 @@ class Editor {
     return Promise.resolve()
       .then(() => this.project.init())
       .then(() => this.session.setProject(id))
-      .then(() => this.renderer.updateGltf(this.project.jsonProxy));
+      .then(() => {
+        if (this.renderer) {
+          this.renderer.updateGltf(this.project.jsonProxy);
+        }
+      });
   }
 
   loadRemoteProject(params) {
@@ -121,7 +125,7 @@ class Editor {
 
         jsonpatch.applyPatch(this.project.jsonProxy, patch, true, true, true);
 
-        return this.renderer.updatePromise;
+        return (this.renderer) ? this.renderer.updatePromise : Promise.resolve();
       });
   }
 
@@ -202,6 +206,9 @@ class Editor {
   }
 
   pickSelection(params, results) {
+    if (!this.renderer) {
+      return;
+    }
     const position = { x: params.x, y: params.y };
     const selection = this.renderer.pick(position);
     if (!selection) {
@@ -244,7 +251,7 @@ class Editor {
       this.height,
     );
 
-    if (!this.gui.isActive()) {
+    if (!this.gui.isActive() && this.renderer) {
       this.renderer.controls.update(dt);
 
       while (this.system.events.length) {
@@ -266,12 +273,14 @@ class Editor {
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
     jsonpatch.applyPatch(model, results.updates, true, true, true);
 
-    let scene = null;
-    if (this.project) {
-      await this.renderer.updateGltfDelta(this.project.update());
-      scene = Object.keys(this.project?.jsonProxy?.scenes ?? [])[0];
+    if (this.renderer) {
+      let scene = null;
+      if (this.project) {
+        await this.renderer.updateGltfDelta(this.project.update());
+        scene = Object.keys(this.project?.jsonProxy?.scenes ?? [])[0];
+      }
+      this.renderer.update(scene, this.width, this.height);
     }
-    this.renderer.update(scene, this.width, this.height);
 
     this.gui.render();
 
