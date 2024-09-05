@@ -15,6 +15,13 @@ class WebSystem {
         y: event.y,
       });
     });
+
+    this.canvas.addEventListener('keyup', (event) => {
+      this.events.push({
+        type: 'KeyboardEvent',
+        keysym: event.code,
+      });
+    });
   }
 
   openFiles() {

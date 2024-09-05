@@ -226,6 +226,13 @@ class Editor {
     });
   }
 
+  debug() {
+    console.log('==Project==');
+    console.dir(JSON.parse(JSON.stringify(this.project?.jsonProxy)));
+    console.log('==Renderer==');
+    this.renderer.debug();
+  }
+
   handleRpc(rpc, results) {
     if (!(rpc.method in this)) {
       console.error(`No function ${rpc.method}`);
@@ -268,6 +275,12 @@ class Editor {
               y: event.y / this.height,
             },
           });
+        }
+
+        if (event.type === 'KeyboardEvent') {
+          if (event.keysym === 'KeyP') {
+            results.addCall({ method: 'debug' });
+          }
         }
       }
     } else {
