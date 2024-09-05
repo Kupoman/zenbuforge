@@ -239,6 +239,10 @@ class Editor {
     const dt = (time - this.prevTime) / 1000;
     this.prevTime = time;
 
+    if (!this.project.isInitialized()) {
+      return;
+    }
+
     const model = {
       session: this.session.jsonProxy,
       projectList: this.projectList.jsonProxy,
