@@ -1,5 +1,6 @@
 import * as jsonpatch from 'fast-json-patch';
 import * as uuid from 'uuid';
+import Quaternion from 'quaternion';
 
 import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
@@ -19,6 +20,18 @@ class Editor {
     this.width = 0;
     this.height = 0;
     this.prevTime = 0;
+
+    this.triggers = [
+      {
+        test: /(add|update):\/project\/nodes\/[^/]*\/extras\/rotationEuler/,
+        action: (update) => {
+          const [, , , id] = update.path.split('/');
+          const node = this.project.jsonProxy.nodes[id];
+          const quat = Quaternion.fromEuler(...update.value, 'XYZ');
+          node.rotation = [quat.x, quat.y, quat.z, quat.w];
+        },
+      },
+    ];
   }
 
   getActiveProjectDetails() {
@@ -242,6 +255,17 @@ class Editor {
     this[rpc.method](rpc.params, results);
   }
 
+  handleTriggeredUpdates(results) {
+    results.updates.forEach((update) => {
+      const key = `${update.op}:${update.path}`;
+      this.triggers.forEach((trigger) => {
+        if (trigger.test.test(key)) {
+          trigger.action(update);
+        }
+      });
+    });
+  }
+
   async update(time) {
     const dt = (time - this.prevTime) / 1000;
     this.prevTime = time;
@@ -288,6 +312,7 @@ class Editor {
     }
 
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
+    this.handleTriggeredUpdates(results);
     jsonpatch.applyPatch(model, results.updates, true, true, true);
 
     if (this.renderer) {

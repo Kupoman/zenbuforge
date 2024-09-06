@@ -192,6 +192,8 @@ export function ensureTRSNodes(data) {
       node.scale = [1.0, 1.0, 1.0];
       delete node.matrix;
     }
+    node.extras ??= {};
+    node.extras.rotationEuler = [0, 0, 0];
   });
 }
 

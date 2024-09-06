@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Swap camera up and down keys
 - Move camera rotation from left mouse to right mouse
+- Display rotation as Euler angles
 
 ## [0.0.1] - 2024-08-14
 
