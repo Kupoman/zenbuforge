@@ -27,7 +27,8 @@ class Editor {
         action: (update) => {
           const [, , , id] = update.path.split('/');
           const node = this.project.jsonProxy.nodes[id];
-          const quat = Quaternion.fromEuler(...update.value, 'XYZ');
+          const valueRad = update.value.map((v) => (Math.PI * v) / 180);
+          const quat = Quaternion.fromEuler(...valueRad, 'XYZ');
           node.rotation = [quat.x, quat.y, quat.z, quat.w];
         },
       },
