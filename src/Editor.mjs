@@ -21,6 +21,8 @@ class Editor {
     this.height = 0;
     this.prevTime = 0;
 
+    this.renderResult = null;
+
     this.triggers = [
       {
         test: /(add|update):\/project\/nodes\/[^/]*\/extras\/rotationEuler/,
@@ -279,6 +281,7 @@ class Editor {
       session: this.session.jsonProxy,
       projectList: this.projectList.jsonProxy,
       project: this.project?.jsonProxy,
+      renderResult: this.renderResult,
     };
     const results = this.gui.update(
       time,
@@ -296,8 +299,8 @@ class Editor {
           results.addCall({
             method: 'pickSelection',
             params: {
-              x: event.x / this.width,
-              y: event.y / this.height,
+              x: (event.x - results.viewport.x) / results.viewport.width,
+              y: (event.y - results.viewport.y) / results.viewport.height,
             },
           });
         }
@@ -315,6 +318,7 @@ class Editor {
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
     jsonpatch.applyPatch(model, results.updates, true, true, true);
+    this.gui.render();
 
     if (this.renderer) {
       let scene = null;
@@ -322,10 +326,8 @@ class Editor {
         await this.renderer.updateGltfDelta(this.project.update());
         scene = Object.keys(this.project?.jsonProxy?.scenes ?? [])[0];
       }
-      this.renderer.update(scene, this.width, this.height);
+      this.renderResult = this.renderer.update(scene, results.viewport);
     }
-
-    this.gui.render();
 
     const projectDetails = this.getActiveProjectDetails();
     if (projectDetails && this.system) {
