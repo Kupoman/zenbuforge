@@ -176,7 +176,7 @@ export function toArrayRefs(data) {
 
 export function initNames(data) {
   const local = data;
-  this.COLLECTION_PROPS.forEach((prop) => {
+  COLLECTION_PROPS.forEach((prop) => {
     (local[prop] || []).forEach((item) => {
       item.name = item.name || item.extras.id;
     });
@@ -210,8 +210,8 @@ export function ensureLightExtension(data) {
 }
 
 export function normalize(data) {
-  this.ensureLightExtension(data);
-  this.toMapRefs(data);
-  this.initNames(data);
-  this.ensureTRSNodes(data);
+  ensureLightExtension(data);
+  toMapRefs(data);
+  initNames(data);
+  ensureTRSNodes(data);
 }
