@@ -273,7 +273,7 @@ class Editor {
     const dt = (time - this.prevTime) / 1000;
     this.prevTime = time;
 
-    if (!this.project.isInitialized()) {
+    if (this.project && !this.project.isInitialized()) {
       return;
     }
 
