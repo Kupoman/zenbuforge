@@ -1,0 +1,132 @@
+{
+  "projects": {
+    "name": "Projects",
+    "key": "/projectList/projects",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "projects",
+          "key": "/projectList/projects"
+        }
+      },
+      {
+        "name": "Add Remote",
+        "method": "loadRemoteProject",
+        "userParams": [
+          {
+            "label": "ID",
+            "key": "id",
+            "type": "text",
+            "default": ""
+          },
+          {
+            "label": "Server",
+            "key": "server",
+            "type": "text",
+            "default": ""
+          }
+        ]
+      }
+    ]
+  },
+  "scenes": {
+    "name": "Scenes",
+    "key": "/project/scenes",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "scenes",
+          "key": "/project/scenes"
+        }
+      }
+    ]
+  },
+  "nodes": {
+    "name": "Nodes",
+    "key": "/project/nodes",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "nodes",
+          "key": "/project/nodes"
+        }
+      }
+    ]
+  },
+  "meshes": {
+    "name": "Meshes",
+    "key": "/project/meshes",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "meshes",
+          "key": "/project/meshes"
+        }
+      }
+    ]
+  },
+  "textures": {
+    "name": "Textures",
+    "key": "/project/textures",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "textures",
+          "key": "/project/textures"
+        }
+      }
+    ]
+  },
+  "materials": {
+    "name": "Materials",
+    "key": "/project/materials",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "materials",
+          "key": "/project/materials"
+        }
+      }
+    ]
+  },
+  "lights": {
+    "name": "Lights",
+    "key": "/project/extensions/KHR_lights_punctual/lights",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "lights",
+          "key": "/project/extensions/KHR_lights_punctual/lights"
+        }
+      }
+    ]
+  },
+  "cameras": {
+    "name": "Cameras",
+    "key": "/project/cameras",
+    "actions": [
+      {
+        "name": "New",
+        "method": "addResource",
+        "params": {
+          "kind": "cameras",
+          "key": "/project/cameras"
+        }
+      }
+    ]
+  }
+}

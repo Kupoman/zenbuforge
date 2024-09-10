@@ -1,0 +1,666 @@
+{
+  "projects": {
+    "name": "Project",
+    "key": "projects",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Server",
+        "type": "text",
+        "default": "",
+        "key": "server"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "projects",
+          "key": "/projectList/projects"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      },
+      {
+        "name": "Load",
+        "method": "loadProject",
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      },
+      {
+        "name": "Import",
+        "method": "import",
+        "conditions": [
+          "isActiveProject"
+        ]
+      },
+      {
+        "name": "Export Project",
+        "method": "export",
+        "conditions": [
+          "isActiveProject"
+        ]
+      },
+      {
+        "name": "Export glTF",
+        "method": "exportGltf",
+        "conditions": [
+          "isActiveProject"
+        ]
+      }
+    ]
+  },
+  "scenes": {
+    "name": "Scene",
+    "key": "scenes",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Nodes",
+        "key": "nodes",
+        "type": "listRef",
+        "args": {
+          "key": "/nodes"
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "scenes",
+          "key": "/project/scenes"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "nodes": {
+    "name": "Node",
+    "key": "nodes",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Position",
+        "key": "translation",
+        "default": [
+          0,
+          0,
+          0
+        ],
+        "type": "float3",
+        "args": {
+          "step": 0.1,
+          "display": "%.2fm"
+        }
+      },
+      {
+        "label": "Rotation",
+        "type": "float3",
+        "default": [
+          0,
+          0,
+          0
+        ],
+        "key": "extras/rotationEuler",
+        "args": {
+          "step": 1,
+          "display": "%.2f°"
+        }
+      },
+      {
+        "label": "Scale",
+        "type": "float3",
+        "default": [
+          1,
+          1,
+          1
+        ],
+        "key": "scale",
+        "args": {
+          "display": "%.2fx"
+        }
+      },
+      {
+        "label": "Children",
+        "key": "children",
+        "type": "listRef",
+        "args": {
+          "key": "/nodes"
+        }
+      },
+      {
+        "label": "Mesh",
+        "key": "mesh",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/meshes"
+        }
+      },
+      {
+        "label": "Light",
+        "key": "extensions/KHR_lights_punctual/light",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/extensions/KHR_lights_punctual/lights"
+        }
+      },
+      {
+        "label": "Camera",
+        "key": "camera",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/cameras"
+        }
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "nodes",
+          "key": "/project/nodes"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "meshes": {
+    "name": "Mesh",
+    "key": "meshes",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Primitives",
+        "type": "beginTabs",
+        "key": "primitives"
+      },
+      {
+        "label": "Material",
+        "key": "material",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/materials"
+        }
+      },
+      {
+        "label": "Draw Mode",
+        "type": "combo",
+        "default": 4,
+        "key": "mode",
+        "args": {
+          "options": [
+            "points",
+            "lines",
+            "line loop",
+            "line strip",
+            "triangles",
+            "triangle strip",
+            "triangle fan"
+          ],
+          "mapValues": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      {
+        "label": "Positions",
+        "key": "attributes/POSITION",
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Normals",
+        "key": "attributes/NORMAL",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Tangents",
+        "key": "attributes/TANGENT",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Positions",
+        "key": "attributes/POSITION",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Texcoords (0)",
+        "key": "attributes/TEXCOORD_0",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Texcoords (1)",
+        "key": "attributes/TEXCOORD_1",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Colors",
+        "key": "attributes/COLOR_0",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Indices",
+        "key": "indices",
+        "optional": true,
+        "type": "ref",
+        "args": {
+          "key": "/accessors"
+        }
+      },
+      {
+        "label": "Primitives",
+        "type": "endTabs",
+        "key": "primitives"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "meshes",
+          "key": "/project/meshes"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "materials": {
+    "name": "Material",
+    "key": "materials",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Base Color Factor",
+        "type": "color4",
+        "default": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "key": "pbrMetallicRoughness/baseColorFactor"
+      },
+      {
+        "label": "Base Color Texture",
+        "key": "pbrMetallicRoughness/baseColorTexture",
+        "optional": true,
+        "type": "textureRef",
+        "args": {
+          "key": "/textures"
+        }
+      },
+      {
+        "label": "Roughness Factor",
+        "type": "float",
+        "default": 0,
+        "key": "pbrMetallicRoughness/roughnessFactor",
+        "args": {
+          "step": 0.01,
+          "min": 0,
+          "max": 1
+        }
+      },
+      {
+        "label": "Metallic Factor",
+        "type": "float",
+        "default": 0,
+        "key": "pbrMetallicRoughness/metallicFactor",
+        "args": {
+          "step": 0.01,
+          "min": 0,
+          "max": 1
+        }
+      },
+      {
+        "label": "Metallic/Roughness Texture",
+        "key": "pbrMetallicRoughness/metallicRoughnessTexture",
+        "optional": true,
+        "type": "textureRef",
+        "args": {
+          "key": "/textures"
+        }
+      },
+      {
+        "label": "Emissive Factor",
+        "type": "color3",
+        "default": [
+          0,
+          0,
+          0
+        ],
+        "key": "emissiveFactor"
+      },
+      {
+        "label": "Emissive Texture",
+        "key": "emissiveTexture",
+        "optional": true,
+        "type": "textureRef",
+        "args": {
+          "key": "/textures"
+        }
+      },
+      {
+        "label": "Normal Texture",
+        "key": "normalTexture",
+        "optional": true,
+        "type": "textureRef",
+        "args": {
+          "key": "/textures"
+        }
+      },
+      {
+        "label": "Occlusion Texture",
+        "key": "occlusionTexture",
+        "optional": true,
+        "type": "textureRef",
+        "args": {
+          "key": "/textures"
+        }
+      },
+      {
+        "label": "Alpha Mode",
+        "type": "combo",
+        "default": "OPAQUE",
+        "key": "alphaMode",
+        "args": {
+          "options": [
+            "opaque",
+            "mask",
+            "blend"
+          ],
+          "mapValues": [
+            "OPAQUE",
+            "MASK",
+            "BLEND"
+          ]
+        }
+      },
+      {
+        "label": "Alpha Cutoff",
+        "type": "float",
+        "default": 0.5,
+        "key": "alphaCutoff",
+        "args": {
+          "step": 0.01,
+          "min": 0,
+          "max": 1
+        }
+      },
+      {
+        "label": "Double Sided",
+        "type": "boolean",
+        "default": false,
+        "key": "doubleSided"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "materials",
+          "key": "/project/materials"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "lights": {
+    "name": "Light",
+    "key": "extensions/KHR_lights_punctual/lights",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Type",
+        "type": "combo",
+        "key": "type",
+        "args": {
+          "options": [
+            "point",
+            "spot",
+            "directional"
+          ]
+        }
+      },
+      {
+        "label": "Color",
+        "type": "color3",
+        "default": [
+          1,
+          1,
+          1
+        ],
+        "key": "color"
+      },
+      {
+        "label": "Intensity",
+        "type": "float",
+        "default": 1,
+        "key": "intensity"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "lights",
+          "key": "/project/extensions/KHR_lights_punctual/lights"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "textures": {
+    "name": "Texture",
+    "key": "textures",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "textures",
+          "key": "/project/textures"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "samplers": {
+    "name": "Sampler",
+    "key": "samplers",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      },
+      {
+        "label": "Min Filter",
+        "type": "float",
+        "default": 0,
+        "key": "minFilter"
+      },
+      {
+        "label": "Mag Filter",
+        "type": "float",
+        "default": 0,
+        "key": "magFilter"
+      },
+      {
+        "label": "S Wrapping",
+        "type": "float",
+        "default": 0,
+        "key": "wrapS"
+      },
+      {
+        "label": "T Wrapping",
+        "type": "float",
+        "default": 0,
+        "key": "wrapT"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "samplers",
+          "key": "/project/samplers"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  },
+  "cameras": {
+    "name": "Camera",
+    "key": "cameras",
+    "properties": [
+      {
+        "label": "Name",
+        "type": "text",
+        "default": "",
+        "key": "name"
+      }
+    ],
+    "actions": [
+      {
+        "name": "Delete",
+        "method": "deleteResource",
+        "params": {
+          "kind": "cameras",
+          "key": "/project/cameras"
+        },
+        "objectParams": [
+          {
+            "key": "id",
+            "pointer": "/id"
+          }
+        ]
+      }
+    ]
+  }
+}
