@@ -1,8 +1,13 @@
 # Zenbuforge Level
+
+Link: https://kupoman.github.io/zenbuforge/
+
 Zenbuforge Level is a collaborative 3D level editor.
 It is based on the glTF format and is designed to allow users to create 3D levels together for any game engine that supports glTF import.
 This project is still in its very early stages and is not intended for anything close to a production work flow.
 Everything in this project is subject to change.
+
+![Screenshot of Zenbuforge Level in action](screenshot.png)
 
 ## Viewport controls
 * Q: Move camera down
