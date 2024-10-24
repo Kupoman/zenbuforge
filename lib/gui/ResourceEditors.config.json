@@ -81,6 +81,16 @@
         "args": {
           "key": "/nodes"
         }
+      },
+      {
+        "label": "Exposure Value",
+        "key": "extras/exposure",
+        "type": "float",
+        "default": 12.0,
+        "args": {
+          "step": 0.01,
+          "display": "%.2f"
+        }
       }
     ],
     "actions": [
