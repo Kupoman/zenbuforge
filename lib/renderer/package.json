@@ -1,6 +1,7 @@
 {
   "name": "zf-renderer-threejs",
   "main": "index.mjs",
+  "type": "module",
   "dependencies": {
     "data-uri-to-buffer": "^6.0.2",
     "fast-json-patch": "^3.1.1",
