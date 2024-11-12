@@ -66,6 +66,7 @@ class Editor {
       .then(() => this.session.setProject(id))
       .then(() => {
         if (this.renderer) {
+          this.renderer.reset();
           this.renderer.updateGltf(this.project.jsonProxy);
         }
       });
