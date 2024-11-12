@@ -49,6 +49,11 @@ class Project extends PersistedData {
             array.push(ext);
           }
         });
+
+        if (typeof this.jsonProxy.scene === 'undefined' || this.jsonProxy.scene === null) {
+          const currentScene = Object.keys(this.jsonProxy.scenes ?? {})[0];
+          this.jsonProxy.scene = currentScene;
+        }
       })
       .then(() => {
         if (!this.server) {
