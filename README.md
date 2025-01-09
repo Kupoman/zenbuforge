@@ -1,7 +1,8 @@
 # Zenbuforge Level
 **Everything in this project is subject to change.**
 
-The editor is hosted on GitHub Pages: https://kupoman.github.io/zenbuforge/
+The main branch is hosted here: https://level.zenbuforge.com/
+The develop branch is hosted here: https://kupoman.github.io/zenbuforge/
 
 Zenbuforge Level is a local-fist collaborative 3D level editor.
 Project data is stored locally in your browser.
