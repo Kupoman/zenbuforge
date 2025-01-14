@@ -1,3 +1,5 @@
+/* eslint no-param-reassign: "off" */
+
 import JSONPath from 'jsonpath';
 
 import * as uuid from 'uuid';

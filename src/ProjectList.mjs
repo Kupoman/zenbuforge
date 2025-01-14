@@ -6,7 +6,6 @@ class ProjectList extends PersistedData {
       .then(() => super.init())
       .then(() => {
         this.jsonProxy.projects ??= {};
-        //this.jsonProxy.projects = {};
       });
   }
 }

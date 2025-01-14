@@ -146,6 +146,7 @@ class Editor {
       });
   }
 
+  /* eslint-disable-next-line class-methods-use-this */
   addResource(params, results) {
     const { kind, key } = params;
     const id = uuid.v4();
@@ -325,7 +326,7 @@ class Editor {
       let scene = null;
       if (this.project) {
         await this.renderer.updateGltfDelta(this.project.update());
-        scene = Object.keys(this.project?.jsonProxy?.scenes ?? [])[0];
+        [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
       }
       const selectedNodes = this.session.jsonProxy.selections
         .filter((s) => s.kind === 'nodes' && s.id !== null)

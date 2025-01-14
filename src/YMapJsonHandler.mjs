@@ -73,6 +73,7 @@ const YArrayJsonHandler = {
       return Array.prototype[key];
     }
 
+    /* eslint-disable-next-line no-use-before-define */
     return ProxyBuilder.auto(target.get(key));
   },
 
@@ -115,6 +116,7 @@ const YMapJsonHandler = {
     if (key === 'toJSON') {
       return () => target.toJSON();
     }
+    /* eslint-disable-next-line no-use-before-define */
     return ProxyBuilder.auto(target.get(key));
   },
 

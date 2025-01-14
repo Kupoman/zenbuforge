@@ -4,9 +4,11 @@
   "description": "3D collaborative level editor",
   "main": "main.js",
   "scripts": {
-    "lint": "eslint --color lib",
+    "lint": "eslint --color src",
     "test": "mocha --color",
-    "coverage": "c8 npm run test"
+    "coverage": "c8 npm run test",
+    "ci-build": "vite build",
+    "ci-test": "npm run lint && npm run coverage"
   },
   "author": "",
   "license": "ISC",
