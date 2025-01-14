@@ -327,7 +327,10 @@ class Editor {
         await this.renderer.updateGltfDelta(this.project.update());
         scene = Object.keys(this.project?.jsonProxy?.scenes ?? [])[0];
       }
-      this.renderResult = this.renderer.update(scene, results.viewport);
+      const selectedNodes = this.session.jsonProxy.selections
+        .filter((s) => s.kind === 'nodes' && s.id !== null)
+        .map((s) => s.id);
+      this.renderResult = this.renderer.update(scene, results.viewport, selectedNodes);
     }
 
     const projectDetails = this.getActiveProjectDetails();

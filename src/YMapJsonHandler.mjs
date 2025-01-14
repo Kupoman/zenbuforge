@@ -69,7 +69,7 @@ const YArrayJsonHandler = {
       };
     }
 
-    if (['map', 'forEach'].includes(key)) {
+    if (['filter', 'map', 'forEach'].includes(key)) {
       return Array.prototype[key];
     }
 
