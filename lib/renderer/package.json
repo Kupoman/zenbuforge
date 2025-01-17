@@ -10,6 +10,13 @@
     "reporter": [
       "text",
       "html"
+    ],
+    "include": [
+      "*.mjs"
+    ],
+    "exclude": [
+      "CopyDepthPass.mjs",
+      "OutlinePass.js"
     ]
   },
   "dependencies": {
