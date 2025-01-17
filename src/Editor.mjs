@@ -323,15 +323,22 @@ class Editor {
     this.gui.render();
 
     if (this.renderer) {
-      let scene = null;
       if (this.project) {
-        await this.renderer.updateGltfDelta(this.project.update());
-        [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
+        const updates = this.project.update();
+        const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
+        if (scene) {
+          updates.push({
+            op: 'add',
+            path: '/scene',
+            value: scene,
+          });
+        }
+        await this.renderer.updateGltfDelta(updates);
       }
       const selectedNodes = this.session.jsonProxy.selections
         .filter((s) => s.kind === 'nodes' && s.id !== null)
         .map((s) => s.id);
-      this.renderResult = this.renderer.update(scene, results.viewport, selectedNodes);
+      this.renderResult = this.renderer.update(results.viewport, selectedNodes);
     }
 
     const projectDetails = this.getActiveProjectDetails();
