@@ -141,8 +141,6 @@ class Editor {
         });
 
         jsonpatch.applyPatch(this.project.jsonProxy, patch, true, true, true);
-
-        return (this.renderer) ? this.renderer.updatePromise : Promise.resolve();
       });
   }
 
