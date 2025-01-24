@@ -317,7 +317,6 @@ class Editor {
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
     jsonpatch.applyPatch(model, results.updates, true, true, true);
-    this.gui.render();
 
     if (this.renderer) {
       if (this.project) {
