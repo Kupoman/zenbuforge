@@ -281,7 +281,6 @@ class Editor {
       session: this.session.jsonProxy,
       projectList: this.projectList.jsonProxy,
       project: this.project?.jsonProxy,
-      renderResult: this.renderResult,
     };
     const results = this.gui.update(
       time,
@@ -336,7 +335,7 @@ class Editor {
       const selectedNodes = this.session.jsonProxy.selections
         .filter((s) => s.kind === 'nodes' && s.id !== null)
         .map((s) => s.id);
-      this.renderResult = this.renderer.update(results.viewport, selectedNodes);
+      this.renderer.update(results.viewport, selectedNodes);
     }
 
     const projectDetails = this.getActiveProjectDetails();
