@@ -119,8 +119,14 @@ const editor = new Editor({
   renderer: new Renderer(canvas, settings),
 });
 
-window.onresize = () => editor.resize(window.innerWidth, window.innerHeight);
-editor.resize(window.innerWidth, window.innerHeight);
+const resize = (width, height) => {
+  editor.resize(width, height);
+  canvas.width = width;
+  canvas.height = height;
+};
+
+window.onresize = () => resize(window.innerWidth, window.innerHeight);
+resize(window.innerWidth, window.innerHeight);
 
 function loop(time) {
   editor.update(time);
