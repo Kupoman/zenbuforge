@@ -8,6 +8,7 @@ import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import ProjectList from './ProjectList.mjs';
 import Session from './Session.mjs';
+import Results from './Results.mjs';
 
 class Editor {
   constructor(dependencies) {
@@ -21,7 +22,22 @@ class Editor {
     this.height = 0;
     this.prevTime = 0;
 
-    this.renderResult = null;
+    this.updates = new Results();
+
+    this.projectSession = {
+      selections: [],
+      viewports: [{
+        x: 0,
+        y: 0,
+        width: 1,
+        height: 1,
+      }],
+    };
+    this.clientSession = {
+      width: 1,
+      height: 1,
+    };
+    this.userSession = {};
 
     this.triggers = [
       {
@@ -35,6 +51,11 @@ class Editor {
         },
       },
     ];
+  }
+
+  updateSession(scope, dt, updates) {
+    this[scope] = jsonpatch.applyPatch(this[scope], updates[scope], true, true, true);
+    return new Results();
   }
 
   getActiveProjectDetails() {
@@ -245,6 +266,9 @@ class Editor {
   debug() {
     console.log('==Project==');
     console.dir(JSON.parse(JSON.stringify(this.project?.jsonProxy)));
+    console.dir(this.projectSession);
+    console.dir(this.clientSession);
+    console.dir(this.userSession);
     console.log('==Renderer==');
     this.renderer.debug();
   }
@@ -277,16 +301,19 @@ class Editor {
       return;
     }
 
+    this.updateSession('projectSession', dt, this.updates);
+    this.updateSession('clientSession', dt, this.updates);
+    this.updateSession('userSession', dt, this.updates);
+
     const model = {
       session: this.session.jsonProxy,
       projectList: this.projectList.jsonProxy,
       project: this.project?.jsonProxy,
     };
     const results = this.gui.update(
-      time,
-      model,
-      this.width,
-      this.height,
+      dt,
+      this.project?.jsonProxy,
+      this.updates,
     );
 
     if (!this.gui.isActive() && this.renderer) {
@@ -341,11 +368,26 @@ class Editor {
     if (projectDetails && this.system) {
       this.system.setProject(projectDetails.name);
     }
+
+    this.updates.clear();
+    this.updates = this.updates.mergeResults(results);
   }
 
   resize(width, height) {
     this.width = width;
     this.height = height;
+
+    this.updates.clientSession.push({
+      op: 'add',
+      path: '/width',
+      value: width,
+    });
+
+    this.updates.clientSession.push({
+      op: 'add',
+      path: '/height',
+      value: height,
+    });
   }
 }
 

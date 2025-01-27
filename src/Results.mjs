@@ -15,6 +15,26 @@ class Results {
     this.userSession = [];
   }
 
+  clear() {
+    this.procedureCalls = [];
+
+    this.projectData = [];
+    this.projectSession = [];
+    this.clientSession = [];
+    this.userSession = [];
+  }
+
+  isEmpty() {
+    return (
+      this.procedureCalls.length === 0
+      && this.projectData.length === 0
+      && this.projectSession.length === 0
+      && this.clientSession.length === 0
+      && this.userSession.length === 0
+      && this.updates.length === 0
+    );
+  }
+
   addUpdate(update) {
     this.updates.push(update);
 
@@ -26,7 +46,7 @@ class Results {
       updateCopy.path = updateCopy.path.replace('/project', '');
       this.projectData.push(updateCopy);
     } else if (scope === 'session') {
-      updateCopy.path = updateCopy.path.replace('/session', '');
+      updateCopy.path = updateCopy.path.replace('/project', '');
       this.projectSession.push(updateCopy);
     } else if (scope === 'projectList') {
       this.userSession.push(updateCopy);
@@ -44,7 +64,7 @@ class Results {
     this.viewport.height = height;
 
     this.projectSession.push({
-      op: 'replace',
+      op: 'add',
       path: '/viewports/0',
       value: JSON.parse(JSON.stringify(this.viewport)),
     });
