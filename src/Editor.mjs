@@ -358,6 +358,7 @@ class Editor {
     this.handleTriggeredUpdates(results);
     try {
       jsonpatch.applyPatch(this.project.jsonProxy, results.projectData, true, true, true);
+      jsonpatch.applyPatch(this.projectList.jsonProxy, results.projectList, true, true, true);
     } catch (e) {
       console.warn(e);
     }
