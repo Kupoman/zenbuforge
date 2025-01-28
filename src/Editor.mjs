@@ -1,6 +1,7 @@
 import * as jsonpatch from 'fast-json-patch';
 import * as uuid from 'uuid';
 import Quaternion from 'quaternion';
+import { Results } from 'zf-data';
 
 import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
@@ -8,7 +9,6 @@ import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import ProjectList from './ProjectList.mjs';
 import Session from './Session.mjs';
-import Results from './Results.mjs';
 
 class Editor {
   constructor(dependencies) {
@@ -54,8 +54,7 @@ class Editor {
   }
 
   updateSession(scope, dt, updates) {
-    this[scope] = jsonpatch.applyPatch(this[scope], updates[scope], true, true, true);
-    return new Results();
+    jsonpatch.applyPatch(this[scope], updates[scope], true, true, true);
   }
 
   getActiveProjectDetails() {
