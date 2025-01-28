@@ -136,5 +136,6 @@ function loop(time) {
 Promise.resolve()
   .then(() => editor.init())
   .then(() => {
-    loop();
+    resize(window.innerWidth, window.innerHeight);
+    loop(0);
   });
