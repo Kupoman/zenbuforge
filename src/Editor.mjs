@@ -87,6 +87,11 @@ class Editor {
         if (this.renderer) {
           this.renderer.reset();
           this.renderer.updateGltf(this.project.jsonProxy);
+          this.updates.addProjectDataUpdate({
+            op: 'replace',
+            path: '',
+            value: JSON.parse(JSON.stringify(this.project.jsonProxy)),
+          });
         }
       });
   }
@@ -271,7 +276,7 @@ class Editor {
       path: '/selections',
       value: [{
         kind: 'nodes',
-        key: '/project/nodes',
+        key: '/nodes',
         id: selection,
       }],
     });
@@ -378,6 +383,7 @@ class Editor {
     if (this.renderer) {
       if (this.project) {
         const updates = this.project.update();
+        results.projectData.push(...updates);
         const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
         if (scene) {
           updates.push({
