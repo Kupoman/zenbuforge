@@ -339,7 +339,24 @@ class Editor {
       results = results.mergeResults(middleware.update(this.updates));
     });
 
+    if (this.project) {
+      const updates = this.project.update();
+      const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
+      if (scene) {
+        updates.push({
+          op: 'add',
+          path: '/scene',
+          value: scene,
+        });
+      }
+      results.projectData.push(...updates);
+    }
+
     results = results.mergeResults(this.gui.update(this.updates));
+
+    if (this.renderer) {
+      results = results.mergeResults(this.renderer.update(this.updates));
+    }
 
     if (!this.gui.isActive() && this.renderer) {
       this.renderer.controls.update(dt);
@@ -375,29 +392,6 @@ class Editor {
       } catch (e) {
         console.warn(e);
       }
-    }
-
-    if (this.renderer) {
-      if (this.project) {
-        const updates = this.project.update();
-        results.projectData.push(...updates);
-        const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
-        if (scene) {
-          updates.push({
-            op: 'add',
-            path: '/scene',
-            value: scene,
-          });
-        }
-        await this.renderer.updateGltfDelta(updates);
-      }
-      const selectedNodes = this.projectSession.selections
-        .filter((s) => s.kind === 'nodes' && s.id !== null)
-        .map((s) => s.id);
-      this.renderer.update(
-        this.projectSession.viewports[0],
-        selectedNodes,
-      );
     }
 
     const projectDetails = this.getActiveProjectDetails();
