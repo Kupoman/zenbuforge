@@ -8,20 +8,22 @@ import Importer from './Importer.mjs';
 import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import SessionMiddleware from './SessionMiddleware.mjs';
+import ProjectMiddleware from './ProjectMiddleware.mjs';
 
 class Editor {
   constructor(dependencies) {
-    this.project = null;
     this.gui = dependencies.gui;
     this.renderer = dependencies.renderer;
     this.system = dependencies.system;
 
+    this.projectData = {};
     this.projectSession = {};
     this.clientSession = {};
     this.userSession = {};
 
     this.middlewares = [
       new SessionMiddleware(),
+      new ProjectMiddleware(),
     ];
 
     this.prevTime = 0;
@@ -31,12 +33,16 @@ class Editor {
     this.triggers = [
       {
         test: /(add|update):\/nodes\/[^/]*\/extras\/rotationEuler/,
-        action: (update) => {
+        action: (update, results) => {
           const [, , id] = update.path.split('/');
-          const node = this.project.jsonProxy.nodes[id];
           const valueRad = update.value.map((v) => (Math.PI * v) / 180);
           const quat = Quaternion.fromEuler(...valueRad, 'XYZ');
-          node.rotation = [quat.x, quat.y, quat.z, quat.w];
+
+          results.addProjectDataUpdate({
+            op: 'add',
+            path: `/nodes/${id}/rotation`,
+            value: [quat.x, quat.y, quat.z, quat.w],
+          });
         },
       },
     ];
@@ -56,61 +62,38 @@ class Editor {
     this.updateState('projectSession');
     this.updateState('clientSession');
     this.updateState('userSession');
-
-    const activeProjectId = this.clientSession.projectId;
-    if (activeProjectId) {
-      this.loadProject({ id: activeProjectId });
-    }
   }
 
-  loadProject(params) {
+  /* eslint-disable-next-line class-methods-use-this */
+  loadProject(params, results) {
     const { id } = params;
-    if (this.project) {
-      this.project.destroy();
-    }
-
-    const projectDetails = this.userSession.projects[id];
-    this.project = new Project(projectDetails);
-    return Promise.resolve()
-      .then(() => this.project.init())
-      .then(() => {
-        this.updates.addClientSessionUpdate({
-          op: 'replace',
-          path: '/projectId',
-          value: id,
-        });
-        this.updates.addProjectSessionUpdate({
-          op: 'replace',
-          path: '/selections',
-          value: [],
-        });
-        if (this.renderer) {
-          this.renderer.reset();
-          this.renderer.updateGltf(this.project.jsonProxy);
-          this.updates.addProjectDataUpdate({
-            op: 'replace',
-            path: '',
-            value: JSON.parse(JSON.stringify(this.project.jsonProxy)),
-          });
-        }
-      });
+    results.addClientSessionUpdate({
+      op: 'replace',
+      path: '/projectId',
+      value: id,
+    });
   }
 
-  loadRemoteProject(params) {
+  loadRemoteProject(params, results) {
     const { id, server } = params;
-    this.userSession.projects[id] = {
-      id,
-      name: id,
-      server,
-    };
-    return this.loadProject(params);
+
+    results.addUserSessionUpdate({
+      op: 'add',
+      path: '/projects',
+      value: {
+        id,
+        name: id,
+        server,
+      },
+    });
+    return this.loadProject(params, results);
   }
 
   export() {
     const projectDetails = this.getActiveProjectDetails();
     const exporter = new Exporter();
     return Promise.resolve()
-      .then(() => exporter.exportProject(this.project.jsonProxy))
+      .then(() => exporter.exportProject(this.projectData))
       .then(() => this.system.saveFile(
         exporter.results,
         `${projectDetails.name}.gltf`,
@@ -122,7 +105,7 @@ class Editor {
     const projectDetails = this.getActiveProjectDetails();
     const exporter = new Exporter();
     return Promise.resolve()
-      .then(() => exporter.exportGltf(this.project.jsonProxy))
+      .then(() => exporter.exportGltf(this.projectData))
       .then(() => this.system.saveFile(
         exporter.results,
         `${projectDetails.name}.glb`,
@@ -164,7 +147,7 @@ class Editor {
           });
         });
 
-        jsonpatch.applyPatch(this.project.jsonProxy, patch, true, true, true);
+        patch.forEach((update) => this.updates.addProjectDataUpdate(update));
       });
   }
 
@@ -238,8 +221,6 @@ class Editor {
           path: '/projectId',
           value: null,
         });
-        this.project.destroy();
-        this.project = null;
       }
     }
 
@@ -284,7 +265,6 @@ class Editor {
 
   debug() {
     console.log('==Project==');
-    console.dir(JSON.parse(JSON.stringify(this.project?.jsonProxy ?? null)));
     console.dir(JSON.parse(JSON.stringify(this.projectSession)));
     console.dir(JSON.parse(JSON.stringify(this.clientSession)));
     console.dir(JSON.parse(JSON.stringify(this.userSession)));
@@ -306,7 +286,7 @@ class Editor {
       const key = `${update.op}:${update.path}`;
       this.triggers.forEach((trigger) => {
         if (trigger.test.test(key)) {
-          trigger.action(update);
+          trigger.action(update, results);
         }
       });
     });
@@ -326,31 +306,16 @@ class Editor {
       value: dt,
     });
 
-    if (this.project && !this.project.isInitialized()) {
-      return;
-    }
-
+    this.updateState('projectData');
     this.updateState('projectSession');
     this.updateState('clientSession');
     this.updateState('userSession');
 
     const results = new Results();
     this.middlewares.forEach((middleware) => {
-      results.mergeResults(middleware.update(this.updates));
+      const localResults = middleware.update(this.updates);
+      results.mergeResults(localResults);
     });
-
-    if (this.project) {
-      const updates = this.project.update();
-      const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
-      if (scene) {
-        updates.push({
-          op: 'add',
-          path: '/scene',
-          value: scene,
-        });
-      }
-      results.projectData.push(...updates);
-    }
 
     results.mergeResults(this.gui.update(this.updates));
 
@@ -386,13 +351,6 @@ class Editor {
 
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
-    if (this.project) {
-      try {
-        jsonpatch.applyPatch(this.project.jsonProxy, results.projectData, true, true, true);
-      } catch (e) {
-        console.warn(e);
-      }
-    }
 
     const projectDetails = this.getActiveProjectDetails();
     if (projectDetails && this.system) {
