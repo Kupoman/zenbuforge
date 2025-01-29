@@ -1,43 +1,38 @@
 import * as jsonpatch from 'fast-json-patch';
-import { Results } from 'zf-data';
+import { Context, Results } from 'zf-data';
 
 class SessionMiddleware {
   constructor() {
-    this.projectSession = {};
-    this.clientSession = {};
-    this.userSession = {};
-
-    this.keys = [
-      'projectSession',
-      'clientSession',
-      'userSession',
-    ];
+    this.context = new Context();
+    this.context.enableProjectSession();
+    this.context.enableClientSession();
+    this.context.enableUserSession();
   }
 
   init() {
     const results = new Results();
-    this.keys.forEach((key) => {
+    this.context.enabledState.forEach((key) => {
       const value = localStorage.getItem(key) ?? '{}';
-      this[key] = JSON.parse(value);
+      this.context[key] = JSON.parse(value);
     });
 
-    this.projectSession.selections ??= [];
-    this.projectSession.viewports ??= [{
+    this.context.projectSession.selections ??= [];
+    this.context.projectSession.viewports ??= [{
       x: 0,
       y: 0,
       width: 1,
       height: 1,
     }];
 
-    this.clientSession.projectId ??= null;
+    this.context.clientSession.projectId ??= null;
 
-    this.userSession.projects ??= {};
+    this.context.userSession.projects ??= {};
 
-    this.keys.forEach((key) => {
+    this.context.enabledState.forEach((key) => {
       results[key].push({
         op: 'replace',
         path: '',
-        value: JSON.parse(JSON.stringify(this[key])),
+        value: JSON.parse(JSON.stringify(this.context[key])),
       });
     });
 
@@ -45,9 +40,9 @@ class SessionMiddleware {
   }
 
   update(updates) {
-    this.keys.forEach((key) => {
-      jsonpatch.applyPatch(this[key], updates[key], true, true, true);
-      localStorage.setItem(key, JSON.stringify(this[key]));
+    this.context.enabledState.forEach((key) => {
+      jsonpatch.applyPatch(this.context[key], updates[key], true, true, true);
+      localStorage.setItem(key, JSON.stringify(this.context[key]));
     });
 
     return new Results();
