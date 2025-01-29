@@ -30,9 +30,9 @@ class Editor {
 
     this.triggers = [
       {
-        test: /(add|update):\/project\/nodes\/[^/]*\/extras\/rotationEuler/,
+        test: /(add|update):\/nodes\/[^/]*\/extras\/rotationEuler/,
         action: (update) => {
-          const [, , , id] = update.path.split('/');
+          const [, , id] = update.path.split('/');
           const node = this.project.jsonProxy.nodes[id];
           const valueRad = update.value.map((v) => (Math.PI * v) / 180);
           const quat = Quaternion.fromEuler(...valueRad, 'XYZ');
@@ -302,7 +302,7 @@ class Editor {
   }
 
   handleTriggeredUpdates(results) {
-    results.updates.forEach((update) => {
+    results.projectData.forEach((update) => {
       const key = `${update.op}:${update.path}`;
       this.triggers.forEach((trigger) => {
         if (trigger.test.test(key)) {
@@ -339,10 +339,7 @@ class Editor {
       results = results.mergeResults(middleware.update(this.updates));
     });
 
-    results = results.mergeResults(this.gui.update(
-      this.updates,
-      this.project?.jsonProxy,
-    ));
+    results = results.mergeResults(this.gui.update(this.updates));
 
     if (!this.gui.isActive() && this.renderer) {
       this.renderer.controls.update(dt);
@@ -371,7 +368,7 @@ class Editor {
     }
 
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
-    //this.handleTriggeredUpdates(results);
+    this.handleTriggeredUpdates(results);
     if (this.project) {
       try {
         jsonpatch.applyPatch(this.project.jsonProxy, results.projectData, true, true, true);
