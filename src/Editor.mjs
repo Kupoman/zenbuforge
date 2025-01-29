@@ -1,7 +1,7 @@
 import * as jsonpatch from 'fast-json-patch';
 import * as uuid from 'uuid';
 import Quaternion from 'quaternion';
-import { Results } from 'zf-data';
+import { Context, Results } from 'zf-data';
 
 import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
@@ -16,10 +16,11 @@ class Editor {
     this.renderer = dependencies.renderer;
     this.system = dependencies.system;
 
-    this.projectData = {};
-    this.projectSession = {};
-    this.clientSession = {};
-    this.userSession = {};
+    this.context = new Context();
+    this.context.enableProjectData();
+    this.context.enableProjectSession();
+    this.context.enableClientSession();
+    this.context.enableUserSession();
 
     this.middlewares = [
       new SessionMiddleware(),
@@ -49,8 +50,8 @@ class Editor {
   }
 
   getActiveProjectDetails() {
-    const activeProjectId = this.clientSession.projectId;
-    return this.userSession.projects[activeProjectId];
+    const activeProjectId = this.context.clientSession.projectId;
+    return this.context.userSession.projects[activeProjectId];
   }
 
   async init() {
@@ -58,10 +59,6 @@ class Editor {
       this.updates.mergeResults(middleware.init());
     });
     await this.gui.init();
-
-    this.updateState('projectSession');
-    this.updateState('clientSession');
-    this.updateState('userSession');
   }
 
   /* eslint-disable-next-line class-methods-use-this */
@@ -93,7 +90,7 @@ class Editor {
     const projectDetails = this.getActiveProjectDetails();
     const exporter = new Exporter();
     return Promise.resolve()
-      .then(() => exporter.exportProject(this.projectData))
+      .then(() => exporter.exportProject(this.context.projectData))
       .then(() => this.system.saveFile(
         exporter.results,
         `${projectDetails.name}.gltf`,
@@ -105,7 +102,7 @@ class Editor {
     const projectDetails = this.getActiveProjectDetails();
     const exporter = new Exporter();
     return Promise.resolve()
-      .then(() => exporter.exportGltf(this.projectData))
+      .then(() => exporter.exportGltf(this.context.projectData))
       .then(() => this.system.saveFile(
         exporter.results,
         `${projectDetails.name}.glb`,
@@ -215,7 +212,7 @@ class Editor {
       });
       deleted.init().then(() => deleted.delete());
 
-      if (id === this.clientSession.projectId) {
+      if (id === this.context.clientSession.projectId) {
         results.addClientSessionUpdate({
           op: 'replace',
           path: '/projectId',
@@ -265,9 +262,10 @@ class Editor {
 
   debug() {
     console.log('==Project==');
-    console.dir(JSON.parse(JSON.stringify(this.projectSession)));
-    console.dir(JSON.parse(JSON.stringify(this.clientSession)));
-    console.dir(JSON.parse(JSON.stringify(this.userSession)));
+    console.dir(JSON.parse(JSON.stringify(this.context.projectData)));
+    console.dir(JSON.parse(JSON.stringify(this.context.projectSession)));
+    console.dir(JSON.parse(JSON.stringify(this.context.clientSession)));
+    console.dir(JSON.parse(JSON.stringify(this.context.userSession)));
     console.log('==Renderer==');
     this.renderer.debug();
   }
@@ -306,15 +304,11 @@ class Editor {
       value: dt,
     });
 
-    this.updateState('projectData');
-    this.updateState('projectSession');
-    this.updateState('clientSession');
-    this.updateState('userSession');
+    this.context.update(this.updates);
 
     const results = new Results();
     this.middlewares.forEach((middleware) => {
-      const localResults = middleware.update(this.updates);
-      results.mergeResults(localResults);
+      results.mergeResults(middleware.update(this.updates));
     });
 
     results.mergeResults(this.gui.update(this.updates));
@@ -329,7 +323,7 @@ class Editor {
       while (this.system.events.length) {
         const event = this.system.events.shift();
         if (event.type === 'MouseButtonEvent') {
-          const viewport = this.projectSession.viewports[0];
+          const viewport = this.context.projectSession.viewports[0];
           results.addCall({
             method: 'pickSelection',
             params: {
@@ -349,7 +343,7 @@ class Editor {
       this.system.events = [];
     }
 
-    results.procedureCalls.forEach((c) => this.handleRpc(c, results));
+    this.updates.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
 
     const projectDetails = this.getActiveProjectDetails();
