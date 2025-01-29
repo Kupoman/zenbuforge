@@ -31,13 +31,13 @@ class SessionMiddleware {
 
     this.clientSession.projectId ??= null;
 
-    this.userSession.projectList ??= {};
+    this.userSession.projects ??= {};
 
     this.keys.forEach((key) => {
       results[key].push({
         op: 'replace',
         path: '',
-        value: this[key],
+        value: JSON.parse(JSON.stringify(this[key])),
       });
     });
 

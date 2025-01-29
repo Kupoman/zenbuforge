@@ -7,19 +7,18 @@ import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
 import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
-import ProjectList from './ProjectList.mjs';
 import SessionMiddleware from './SessionMiddleware.mjs';
 
 class Editor {
   constructor(dependencies) {
     this.project = null;
-    this.projectList = new ProjectList({ id: 'zf-projects' });
     this.gui = dependencies.gui;
     this.renderer = dependencies.renderer;
     this.system = dependencies.system;
 
     this.projectSession = {};
     this.clientSession = {};
+    this.userSession = {};
 
     this.middlewares = [
       new SessionMiddleware(),
@@ -45,19 +44,18 @@ class Editor {
 
   getActiveProjectDetails() {
     const activeProjectId = this.clientSession.projectId;
-    return this.projectList.jsonProxy.projects[activeProjectId];
+    return this.userSession.projects[activeProjectId];
   }
 
   async init() {
     this.middlewares.forEach((middleware) => {
       this.updates = this.updates.mergeResults(middleware.init());
     });
+    await this.gui.init();
 
     this.updateState('projectSession');
     this.updateState('clientSession');
-
-    await this.gui.init();
-    await this.projectList.init();
+    this.updateState('userSession');
 
     const activeProjectId = this.clientSession.projectId;
     if (activeProjectId) {
@@ -71,7 +69,7 @@ class Editor {
       this.project.destroy();
     }
 
-    const projectDetails = this.projectList.jsonProxy.projects[id];
+    const projectDetails = this.userSession.projects[id];
     this.project = new Project(projectDetails);
     return Promise.resolve()
       .then(() => this.project.init())
@@ -95,7 +93,7 @@ class Editor {
 
   loadRemoteProject(params) {
     const { id, server } = params;
-    this.projectList.jsonProxy.projects[id] = {
+    this.userSession.projects[id] = {
       id,
       name: id,
       server,
@@ -197,11 +195,17 @@ class Editor {
       };
     }
 
-    results.addUpdate({
+    const update = {
       op: 'add',
       path: `${key}/${id}`,
       value,
-    });
+    };
+
+    if (kind === 'projects') {
+      results.addUserSessionUpdate(update);
+    } else {
+      results.addProjectDataUpdate(update);
+    }
 
     results.addProjectSessionUpdate({
       op: 'replace',
@@ -234,10 +238,16 @@ class Editor {
       }
     }
 
-    results.addUpdate({
+    const update = {
       op: 'remove',
       path: `${key}/${id}`,
-    });
+    };
+
+    if (kind === 'projects') {
+      results.addUserSessionUpdate(update);
+    } else {
+      results.addProjectDataUpdate(update);
+    }
 
     results.addProjectSessionUpdate({
       op: 'replace',
@@ -269,9 +279,10 @@ class Editor {
 
   debug() {
     console.log('==Project==');
-    console.dir(JSON.parse(JSON.stringify(this.project?.jsonProxy)));
+    console.dir(JSON.parse(JSON.stringify(this.project?.jsonProxy ?? null)));
     console.dir(JSON.parse(JSON.stringify(this.projectSession)));
     console.dir(JSON.parse(JSON.stringify(this.clientSession)));
+    console.dir(JSON.parse(JSON.stringify(this.userSession)));
     console.log('==Renderer==');
     this.renderer.debug();
   }
@@ -297,7 +308,7 @@ class Editor {
   }
 
   updateState(key) {
-    this[key] = jsonpatch.applyPatch(this[key], this.updates[key], true, true, true).newDocument;
+    this[key] = jsonpatch.applyPatch(this[key], this.updates[key], true, false, true).newDocument;
   }
 
   async update(time) {
@@ -316,6 +327,7 @@ class Editor {
 
     this.updateState('projectSession');
     this.updateState('clientSession');
+    this.updateState('userSession');
 
     let results = new Results();
     this.middlewares.forEach((middleware) => {
@@ -325,7 +337,6 @@ class Editor {
     results = results.mergeResults(this.gui.update(
       this.updates,
       this.project?.jsonProxy,
-      this.projectList.jsonProxy,
     ));
 
     if (!this.gui.isActive() && this.renderer) {
@@ -355,12 +366,13 @@ class Editor {
     }
 
     results.procedureCalls.forEach((c) => this.handleRpc(c, results));
-    this.handleTriggeredUpdates(results);
-    try {
-      jsonpatch.applyPatch(this.project.jsonProxy, results.projectData, true, true, true);
-      jsonpatch.applyPatch(this.projectList.jsonProxy, results.projectList, true, true, true);
-    } catch (e) {
-      console.warn(e);
+    //this.handleTriggeredUpdates(results);
+    if (this.project) {
+      try {
+        jsonpatch.applyPatch(this.project.jsonProxy, results.projectData, true, true, true);
+      } catch (e) {
+        console.warn(e);
+      }
     }
 
     if (this.renderer) {

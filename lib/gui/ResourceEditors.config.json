@@ -22,7 +22,7 @@
         "method": "deleteResource",
         "params": {
           "kind": "projects",
-          "key": "/projectList/projects"
+          "key": "/projects"
         },
         "objectParams": [
           {

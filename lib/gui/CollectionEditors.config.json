@@ -1,14 +1,14 @@
 {
   "projects": {
     "name": "Projects",
-    "key": "/projectList/projects",
+    "key": "/projects",
     "actions": [
       {
         "name": "New",
         "method": "addResource",
         "params": {
           "kind": "projects",
-          "key": "/projectList/projects"
+          "key": "/projects"
         }
       },
       {
