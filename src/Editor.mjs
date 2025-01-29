@@ -49,7 +49,7 @@ class Editor {
 
   async init() {
     this.middlewares.forEach((middleware) => {
-      this.updates = this.updates.mergeResults(middleware.init());
+      this.updates.mergeResults(middleware.init());
     });
     await this.gui.init();
 
@@ -334,9 +334,9 @@ class Editor {
     this.updateState('clientSession');
     this.updateState('userSession');
 
-    let results = new Results();
+    const results = new Results();
     this.middlewares.forEach((middleware) => {
-      results = results.mergeResults(middleware.update(this.updates));
+      results.mergeResults(middleware.update(this.updates));
     });
 
     if (this.project) {
@@ -352,10 +352,10 @@ class Editor {
       results.projectData.push(...updates);
     }
 
-    results = results.mergeResults(this.gui.update(this.updates));
+    results.mergeResults(this.gui.update(this.updates));
 
     if (this.renderer) {
-      results = results.mergeResults(this.renderer.update(this.updates));
+      results.mergeResults(this.renderer.update(this.updates));
     }
 
     if (!this.gui.isActive() && this.renderer) {
@@ -400,7 +400,7 @@ class Editor {
     }
 
     this.updates.clear();
-    this.updates = this.updates.mergeResults(results);
+    this.updates.mergeResults(results);
   }
 
   resize(width, height) {
