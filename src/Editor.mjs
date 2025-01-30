@@ -8,7 +8,7 @@ import Importer from './Importer.mjs';
 import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import SessionMiddleware from './SessionMiddleware.mjs';
-import ProjectMiddleware from './ProjectMiddleware.mjs';
+import ThreadedMiddleware from './ThreadedMiddleware.mjs';
 
 class Editor {
   constructor(dependencies) {
@@ -24,7 +24,7 @@ class Editor {
 
     this.middlewares = [
       new SessionMiddleware(),
-      new ProjectMiddleware(),
+      new ThreadedMiddleware('./ProjectMiddleware.mjs'),
     ];
 
     this.prevTime = 0;

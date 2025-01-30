@@ -75,3 +75,17 @@ class ProjectMiddleware {
 }
 
 export default ProjectMiddleware;
+
+/* eslint-disable no-restricted-globals */
+if (self?.WorkerGlobalScope) {
+  const middleware = new ProjectMiddleware();
+  const initResults = middleware.init();
+  postMessage(JSON.stringify(initResults));
+
+  self.addEventListener('message', (event) => {
+    const updates = JSON.parse(event.data);
+    const results = middleware.update(updates);
+    postMessage(JSON.stringify(results));
+  });
+}
+/* eslint-enable no-restricted-globals */
