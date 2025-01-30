@@ -27,6 +27,14 @@ class Editor {
       new ThreadedMiddleware('./ProjectMiddleware.mjs'),
     ];
 
+    if (this.gui) {
+      this.middlewares.push(this.gui);
+    }
+
+    if (this.renderer) {
+      this.middlewares.push(this.renderer);
+    }
+
     this.prevTime = 0;
 
     this.updates = new Results();
@@ -55,10 +63,9 @@ class Editor {
   }
 
   async init() {
-    this.middlewares.forEach((middleware) => {
-      this.updates.mergeResults(middleware.init());
-    });
-    await this.gui.init();
+    await Promise.all(this.middlewares.map(async (middleware) => {
+      this.updates.mergeResults(await middleware.init());
+    }));
   }
 
   /* eslint-disable-next-line class-methods-use-this */
@@ -310,12 +317,6 @@ class Editor {
     this.middlewares.forEach((middleware) => {
       results.mergeResults(middleware.update(this.updates));
     });
-
-    results.mergeResults(this.gui.update(this.updates));
-
-    if (this.renderer) {
-      results.mergeResults(this.renderer.update(this.updates));
-    }
 
     if (!this.gui.isActive() && this.renderer) {
       this.renderer.controls.update(dt);
