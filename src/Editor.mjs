@@ -35,6 +35,10 @@ class Editor {
       this.middlewares.push(this.renderer);
     }
 
+    if (this.system) {
+      this.middlewares.push(this.system);
+    }
+
     this.prevTime = 0;
 
     this.updates = new Results();
@@ -297,10 +301,6 @@ class Editor {
     });
   }
 
-  updateState(key) {
-    this[key] = jsonpatch.applyPatch(this[key], this.updates[key], true, false, true).newDocument;
-  }
-
   async update(time) {
     const dt = (time - this.prevTime) / 1000;
     this.prevTime = time;
@@ -346,11 +346,6 @@ class Editor {
 
     this.updates.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
-
-    const projectDetails = this.getActiveProjectDetails();
-    if (projectDetails && this.system) {
-      this.system.setProject(projectDetails.name);
-    }
 
     this.updates.clear();
     this.updates.mergeResults(results);
