@@ -27,12 +27,12 @@ class Editor {
       new ThreadedMiddleware('./ProjectMiddleware.mjs'),
     ];
 
-    if (this.gui) {
-      this.middlewares.push(this.gui);
-    }
-
     if (this.renderer) {
       this.middlewares.push(this.renderer);
+    }
+
+    if (this.gui) {
+      this.middlewares.push(this.gui);
     }
 
     if (this.system) {
