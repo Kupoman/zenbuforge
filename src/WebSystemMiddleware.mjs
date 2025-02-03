@@ -49,6 +49,7 @@ class WebSystemMiddleware {
     return results;
   }
 
+  /* eslint-disable-next-line class-methods-use-this */
   openFiles() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -73,6 +74,7 @@ class WebSystemMiddleware {
       })));
   }
 
+  /* eslint-disable-next-line class-methods-use-this */
   saveFile(data, filename, type) {
     const file = new Blob([data], { type });
     if (window.navigator.msSaveOrOpenBlob) {

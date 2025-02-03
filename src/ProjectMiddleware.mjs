@@ -53,10 +53,19 @@ class ProjectMiddleware {
     const currentId = this.context.clientSession.projectId;
     this.context.update(updates);
 
+    if (typeof currentId === 'undefined' || currentId === null) {
+      return new Results();
+    }
+
     if (this.project === null || currentId !== this.context.clientSession.projectId) {
       this._loadProject(this.results);
     } else if (this.project.isInitialized()) {
-      jsonpatch.applyPatch(this.project.jsonProxy, updates.projectData, true, true, true);
+      const dataUpdates = updates.projectData.filter((u) => u.origin !== 'project');
+      this.project.ydoc.transact(() => {
+        jsonpatch.applyPatch(this.project.jsonProxy, dataUpdates, true, true, true);
+      }, 'user');
+
+      this.project.getUpdates(this.results);
     }
 
     const [scene] = Object.keys(this.project?.jsonProxy?.scenes ?? []);
