@@ -1,4 +1,3 @@
-import * as jsonpatch from 'fast-json-patch';
 import * as uuid from 'uuid';
 import Quaternion from 'quaternion';
 import { Context, Results } from 'zf-data';
@@ -8,7 +7,7 @@ import Importer from './Importer.mjs';
 import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
 import SessionMiddleware from './SessionMiddleware.mjs';
-import ThreadedMiddleware from './ThreadedMiddleware.mjs';
+import ProjectMiddleware from './ProjectMiddleware.mjs';
 
 class Editor {
   constructor(dependencies) {
@@ -24,7 +23,7 @@ class Editor {
 
     this.middlewares = [
       new SessionMiddleware(),
-      new ThreadedMiddleware('./ProjectMiddleware.mjs'),
+      new ProjectMiddleware(),
     ];
 
     if (this.renderer) {
@@ -87,7 +86,7 @@ class Editor {
 
     results.addUserSessionUpdate({
       op: 'add',
-      path: '/projects',
+      path: `/projects/${id}`,
       value: {
         id,
         name: id,
