@@ -10,9 +10,31 @@ class WebSystemMiddleware {
     this.context.enableUserSession();
 
     this.currentName = '';
+
+    this.results = new Results();
+  }
+
+  resize(width, height) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+
+    this.results.addScratchSessionUpdate({
+      op: 'add',
+      path: '/width',
+      value: width,
+    });
+
+    this.results.addScratchSessionUpdate({
+      op: 'add',
+      path: '/height',
+      value: height,
+    });
   }
 
   init() {
+    window.onresize = () => this.resize(window.innerWidth, window.innerHeight);
+    this.resize(window.innerWidth, window.innerHeight);
+
     this.canvas.addEventListener('click', (event) => {
       this.events.push({
         type: 'MouseButtonEvent',
@@ -31,13 +53,18 @@ class WebSystemMiddleware {
     return new Results();
   }
 
+  _getResults() {
+    const resultStr = JSON.stringify(this.results);
+    this.results.clear();
+    return JSON.parse(resultStr);
+  }
+
   update(updates) {
-    const results = new Results();
     this.context.update(updates);
 
     const id = this.context.clientSession.projectId;
     if (typeof id === 'undefined' || id === null) {
-      return results;
+      return this._getResults();
     }
 
     const projectDetails = this.context.userSession.projects[id];
@@ -46,7 +73,7 @@ class WebSystemMiddleware {
       document.title = `Zenbuforge - ${projectDetails.name}`;
     }
 
-    return results;
+    return this._getResults();
   }
 
   /* eslint-disable-next-line class-methods-use-this */

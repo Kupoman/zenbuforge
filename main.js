@@ -52,15 +52,6 @@ const editor = new Editor({
   renderer: new Renderer(canvas, settings),
 });
 
-const resize = (width, height) => {
-  editor.resize(width, height);
-  canvas.width = width;
-  canvas.height = height;
-};
-
-window.onresize = () => resize(window.innerWidth, window.innerHeight);
-resize(window.innerWidth, window.innerHeight);
-
 function loop(time) {
   editor.update(time);
   requestAnimationFrame(loop);
@@ -69,6 +60,5 @@ function loop(time) {
 Promise.resolve()
   .then(() => editor.init())
   .then(() => {
-    resize(window.innerWidth, window.innerHeight);
     loop(0);
   });
