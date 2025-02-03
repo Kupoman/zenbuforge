@@ -32,16 +32,21 @@ class WebSystemMiddleware {
   }
 
   update(updates) {
+    const results = new Results();
     this.context.update(updates);
 
     const id = this.context.clientSession.projectId;
+    if (typeof id === 'undefined' || id === null) {
+      return results;
+    }
+
     const projectDetails = this.context.userSession.projects[id];
     if (this.currentName !== projectDetails.name) {
       this.currentName = projectDetails.name;
       document.title = `Zenbuforge - ${projectDetails.name}`;
     }
 
-    return new Results();
+    return results;
   }
 
   openFiles() {
