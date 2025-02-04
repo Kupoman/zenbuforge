@@ -1,7 +1,7 @@
+import { Results } from 'zf-data';
 import Gui from 'zf-gui';
 import Renderer from 'zf-renderer-threejs';
 
-import Editor from './src/Editor.mjs';
 import WebSystemMiddleware from './src/WebSystemMiddleware.mjs';
 import SessionMiddleware from './src/SessionMiddleware.mjs';
 import ProjectMiddleware from './src/ProjectMiddleware.mjs';
@@ -93,21 +93,42 @@ class Filesystem {
   }
 }
 
-const editor = new Editor([
+const middlewares = [
   new WebSystemMiddleware(canvas),
   new SessionMiddleware(),
   new ProjectMiddleware(Filesystem),
   new Renderer(canvas, settings),
   new Gui(canvas, settings),
-]);
+];
+let prevTime = 0;
+const updates = new Results();
 
 function loop(time) {
-  editor.update(time);
+  const dt = (time - prevTime) / 1000;
+  prevTime = time;
+
+  updates.addScratchSessionUpdate({
+    op: 'add',
+    path: '/dt',
+    value: dt,
+  });
+
+  const results = new Results();
+
+  middlewares.forEach((middleware) => {
+    results.mergeResults(middleware.update(updates));
+  });
+
+  updates.clear();
+  updates.mergeResults(results);
+
   requestAnimationFrame(loop);
 }
 
 Promise.resolve()
-  .then(() => editor.init())
+  .then(() => Promise.all(middlewares.map(async (middleware) => {
+    updates.mergeResults(await middleware.init());
+  })))
   .then(() => {
     loop(0);
   });
