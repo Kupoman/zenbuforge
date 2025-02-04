@@ -6,13 +6,9 @@ import * as gltf from './GltfUtils.mjs';
 import Importer from './Importer.mjs';
 import Exporter from './Exporter.mjs';
 import Project from './Project.mjs';
-import SessionMiddleware from './SessionMiddleware.mjs';
-import ProjectMiddleware from './ProjectMiddleware.mjs';
 
 class Editor {
-  constructor(dependencies) {
-    this.gui = dependencies.gui;
-    this.renderer = dependencies.renderer;
+  constructor(dependencies, middlewares) {
     this.system = dependencies.system;
 
     this.context = new Context();
@@ -20,19 +16,9 @@ class Editor {
     this.context.enableProjectSession();
     this.context.enableClientSession();
     this.context.enableUserSession();
+    this.context.enableScratchSession();
 
-    this.middlewares = [
-      new SessionMiddleware(),
-      new ProjectMiddleware(),
-    ];
-
-    if (this.renderer) {
-      this.middlewares.push(this.renderer);
-    }
-
-    if (this.gui) {
-      this.middlewares.push(this.gui);
-    }
+    this.middlewares = middlewares;
 
     if (this.system) {
       this.middlewares.push(this.system);
@@ -249,40 +235,22 @@ class Editor {
     });
   }
 
-  pickSelection(params, results) {
-    if (!this.renderer) {
-      return;
-    }
-    const position = { x: params.x, y: params.y };
-    const selection = this.renderer.pick(position);
-    if (!selection) {
-      return;
-    }
-
-    results.addProjectSessionUpdate({
-      op: 'replace',
-      path: '/selections',
-      value: [{
-        kind: 'nodes',
-        key: '/nodes',
-        id: selection,
-      }],
-    });
-  }
-
   debug() {
     console.log('==Project==');
     console.dir(JSON.parse(JSON.stringify(this.context.projectData)));
     console.dir(JSON.parse(JSON.stringify(this.context.projectSession)));
     console.dir(JSON.parse(JSON.stringify(this.context.clientSession)));
     console.dir(JSON.parse(JSON.stringify(this.context.userSession)));
-    console.log('==Renderer==');
-    this.renderer.debug();
+    this.middlewares.forEach((middleware) => {
+      if (middleware.debug) {
+        middleware.debug();
+      }
+    });
   }
 
   handleRpc(rpc, results) {
     if (!(rpc.method in this)) {
-      console.error(`No function ${rpc.method}`);
+      console.warn(`No function called ${rpc.method} in Editor`);
       return;
     }
 
@@ -311,35 +279,11 @@ class Editor {
     });
 
     this.context.update(this.updates);
-
     const results = new Results();
+
     this.middlewares.forEach((middleware) => {
       results.mergeResults(middleware.update(this.updates));
     });
-
-    if (!this.gui.isActive() && this.renderer) {
-      while (this.system.events.length) {
-        const event = this.system.events.shift();
-        if (event.type === 'MouseButtonEvent') {
-          const viewport = this.context.projectSession.viewports[0];
-          results.addCall({
-            method: 'pickSelection',
-            params: {
-              x: (event.x - viewport.x) / viewport.width,
-              y: (event.y - viewport.y) / viewport.height,
-            },
-          });
-        }
-
-        if (event.type === 'KeyboardEvent') {
-          if (event.keysym === 'KeyP') {
-            results.addCall({ method: 'debug' });
-          }
-        }
-      }
-    } else {
-      this.system.events = [];
-    }
 
     this.updates.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);

@@ -3,6 +3,8 @@ import Renderer from 'zf-renderer-threejs';
 
 import Editor from './src/Editor.mjs';
 import WebSystemMiddleware from './src/WebSystemMiddleware.mjs';
+import SessionMiddleware from './src/SessionMiddleware.mjs';
+import ProjectMiddleware from './src/ProjectMiddleware.mjs';
 
 const canvas = document.getElementById('viewport');
 const settings = {
@@ -46,11 +48,17 @@ const settings = {
     base0F: 'cc6633',
   },
 };
-const editor = new Editor({
-  system: new WebSystemMiddleware(canvas),
-  gui: new Gui(canvas, settings),
-  renderer: new Renderer(canvas, settings),
-});
+const editor = new Editor(
+  {
+    system: new WebSystemMiddleware(canvas),
+  },
+  [
+    new SessionMiddleware(),
+    new ProjectMiddleware(),
+    new Renderer(canvas, settings),
+    new Gui(canvas, settings),
+  ],
+);
 
 function loop(time) {
   editor.update(time);

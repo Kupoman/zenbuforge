@@ -6,16 +6,17 @@ class WebSystemMiddleware {
     this.events = [];
 
     this.context = new Context();
+    this.context.enableProjectSession();
     this.context.enableClientSession();
     this.context.enableUserSession();
+    this.context.enableScratchSession();
 
     this.currentName = '';
 
     this.results = new Results();
   }
 
-  resize(width, height) {
-    this.canvas.width = width;
+  resize(width, height) { this.canvas.width = width;
     this.canvas.height = height;
 
     this.results.addScratchSessionUpdate({
@@ -71,6 +72,30 @@ class WebSystemMiddleware {
     if (this.currentName !== projectDetails.name) {
       this.currentName = projectDetails.name;
       document.title = `Zenbuforge - ${projectDetails.name}`;
+    }
+
+    if (!this.context.scratchSession.guiCaptureMouse) {
+      while (this.events.length) {
+        const event = this.events.shift();
+        if (event.type === 'MouseButtonEvent') {
+          const viewport = this.context.projectSession.viewports[0];
+          this.results.addCall({
+            method: 'renderer.pickSelection',
+            params: {
+              x: (event.x - viewport.x) / viewport.width,
+              y: (event.y - viewport.y) / viewport.height,
+            },
+          });
+        }
+
+        if (event.type === 'KeyboardEvent') {
+          if (event.keysym === 'KeyP') {
+            this.results.addCall({ method: 'debug' });
+          }
+        }
+      }
+    } else {
+      this.events = [];
     }
 
     return this._getResults();
