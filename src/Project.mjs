@@ -28,7 +28,7 @@ class Project extends PersistedData {
           this.updates.push({
             op: 'add',
             path: fullPath,
-            value: JSON.parse(JSON.stringify(value)),
+            value: (typeof value === 'undefined') ? null : JSON.parse(JSON.stringify(value)),
             origin: 'project',
           });
         }
