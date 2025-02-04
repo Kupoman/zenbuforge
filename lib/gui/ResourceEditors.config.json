@@ -19,7 +19,7 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "projects",
           "key": "/projects"
@@ -33,7 +33,7 @@
       },
       {
         "name": "Load",
-        "method": "loadProject",
+        "method": "project.load",
         "objectParams": [
           {
             "key": "id",
@@ -43,21 +43,21 @@
       },
       {
         "name": "Import",
-        "method": "import",
+        "method": "project.import",
         "conditions": [
           "isActiveProject"
         ]
       },
       {
         "name": "Export Project",
-        "method": "export",
+        "method": "project.export",
         "conditions": [
           "isActiveProject"
         ]
       },
       {
         "name": "Export glTF",
-        "method": "exportGltf",
+        "method": "project.exportGltf",
         "conditions": [
           "isActiveProject"
         ]
@@ -96,10 +96,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "scenes",
-          "key": "/project/scenes"
+          "key": "/scenes"
         },
         "objectParams": [
           {
@@ -200,10 +200,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "nodes",
-          "key": "/project/nodes"
+          "key": "/nodes"
         },
         "objectParams": [
           {
@@ -344,10 +344,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "meshes",
-          "key": "/project/meshes"
+          "key": "/meshes"
         },
         "objectParams": [
           {
@@ -495,10 +495,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "materials",
-          "key": "/project/materials"
+          "key": "/materials"
         },
         "objectParams": [
           {
@@ -551,10 +551,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "lights",
-          "key": "/project/extensions/KHR_lights_punctual/lights"
+          "key": "/extensions/KHR_lights_punctual/lights"
         },
         "objectParams": [
           {
@@ -579,10 +579,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "textures",
-          "key": "/project/textures"
+          "key": "/textures"
         },
         "objectParams": [
           {
@@ -631,10 +631,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "samplers",
-          "key": "/project/samplers"
+          "key": "/samplers"
         },
         "objectParams": [
           {
@@ -659,10 +659,10 @@
     "actions": [
       {
         "name": "Delete",
-        "method": "deleteResource",
+        "method": "project.deleteResource",
         "params": {
           "kind": "cameras",
-          "key": "/project/cameras"
+          "key": "/cameras"
         },
         "objectParams": [
           {

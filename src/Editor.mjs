@@ -1,11 +1,5 @@
-import * as uuid from 'uuid';
 import Quaternion from 'quaternion';
 import { Context, Results } from 'zf-data';
-
-import * as gltf from './GltfUtils.mjs';
-import Importer from './Importer.mjs';
-import Exporter from './Exporter.mjs';
-import Project from './Project.mjs';
 
 class Editor {
   constructor(dependencies, middlewares) {
@@ -46,215 +40,10 @@ class Editor {
     ];
   }
 
-  getActiveProjectDetails() {
-    const activeProjectId = this.context.clientSession.projectId;
-    return this.context.userSession.projects[activeProjectId];
-  }
-
   async init() {
     await Promise.all(this.middlewares.map(async (middleware) => {
       this.updates.mergeResults(await middleware.init());
     }));
-  }
-
-  /* eslint-disable-next-line class-methods-use-this */
-  loadProject(params, results) {
-    const { id } = params;
-    results.addClientSessionUpdate({
-      op: 'replace',
-      path: '/projectId',
-      value: id,
-    });
-  }
-
-  loadRemoteProject(params, results) {
-    const { id, server } = params;
-
-    results.addUserSessionUpdate({
-      op: 'add',
-      path: `/projects/${id}`,
-      value: {
-        id,
-        name: id,
-        server,
-      },
-    });
-    return this.loadProject(params, results);
-  }
-
-  export() {
-    const projectDetails = this.getActiveProjectDetails();
-    const exporter = new Exporter();
-    return Promise.resolve()
-      .then(() => exporter.exportProject(this.context.projectData))
-      .then(() => this.system.saveFile(
-        exporter.results,
-        `${projectDetails.name}.gltf`,
-        'model/gltf+json',
-      ));
-  }
-
-  exportGltf() {
-    const projectDetails = this.getActiveProjectDetails();
-    const exporter = new Exporter();
-    return Promise.resolve()
-      .then(() => exporter.exportGltf(this.context.projectData))
-      .then(() => this.system.saveFile(
-        exporter.results,
-        `${projectDetails.name}.glb`,
-        'application/gltf-binary',
-      ));
-  }
-
-  import() {
-    const importer = new Importer();
-    return Promise.resolve()
-      .then(() => this.system.openFiles())
-      .then((fileMap) => importer.processFileMap(fileMap))
-      .then(() => {
-        importer.errors.forEach((e) => console.error(e));
-
-        const patch = [];
-        (importer.results ?? []).forEach((result) => {
-          const normalized = JSON.parse(JSON.stringify(result));
-          gltf.normalize(normalized);
-
-          gltf.COLLECTION_PROPS.forEach((prop) => {
-            (normalized[prop] ?? []).forEach((obj) => {
-              const id = gltf.getId(obj) ?? uuid.v4();
-              patch.push({
-                op: 'add',
-                path: `/${prop}/${id}`,
-                value: obj,
-              });
-            });
-          });
-
-          (normalized?.extensions?.KHR_lights_punctual?.lights ?? []).forEach((light) => {
-            const id = gltf.getId(light) ?? uuid.v4();
-            patch.push({
-              op: 'add',
-              path: `/extensions/KHR_lights_punctual/lights/${id}`,
-              value: light,
-            });
-          });
-        });
-
-        patch.forEach((update) => this.updates.addProjectDataUpdate(update));
-      });
-  }
-
-  /* eslint-disable-next-line class-methods-use-this */
-  addResource(params, results) {
-    const { kind, key } = params;
-    const id = uuid.v4();
-    const value = {
-      name: id,
-      extras: { id },
-    };
-
-    if (kind === 'meshes') {
-      value.primitives = [];
-    }
-
-    if (kind === 'lights') {
-      value.type = 'point';
-    }
-
-    if (kind === 'materials') {
-      value.pbrMetallicRoughness = {};
-    }
-
-    if (kind === 'projects') {
-      value.id = id;
-      delete value.extensions;
-    }
-
-    if (kind === 'nodes') {
-      value.extensions = {
-        KHR_lights_punctual: {},
-      };
-    }
-
-    const update = {
-      op: 'add',
-      path: `${key}/${id}`,
-      value,
-    };
-
-    if (kind === 'projects') {
-      results.addUserSessionUpdate(update);
-    } else {
-      results.addProjectDataUpdate(update);
-    }
-
-    results.addProjectSessionUpdate({
-      op: 'replace',
-      path: '/selections',
-      value: [{
-        kind,
-        key,
-        id,
-      }],
-    });
-  }
-
-  deleteResource(params, results) {
-    const { id, key, kind } = params;
-
-    if (kind === 'projects') {
-      const deleted = new Project({
-        id,
-      });
-      deleted.init().then(() => deleted.delete());
-
-      if (id === this.context.clientSession.projectId) {
-        results.addClientSessionUpdate({
-          op: 'replace',
-          path: '/projectId',
-          value: null,
-        });
-      }
-    }
-
-    const update = {
-      op: 'remove',
-      path: `${key}/${id}`,
-    };
-
-    if (kind === 'projects') {
-      results.addUserSessionUpdate(update);
-    } else {
-      results.addProjectDataUpdate(update);
-    }
-
-    results.addProjectSessionUpdate({
-      op: 'replace',
-      path: '/selections',
-      value: [],
-    });
-  }
-
-  debug() {
-    console.log('==Project==');
-    console.dir(JSON.parse(JSON.stringify(this.context.projectData)));
-    console.dir(JSON.parse(JSON.stringify(this.context.projectSession)));
-    console.dir(JSON.parse(JSON.stringify(this.context.clientSession)));
-    console.dir(JSON.parse(JSON.stringify(this.context.userSession)));
-    this.middlewares.forEach((middleware) => {
-      if (middleware.debug) {
-        middleware.debug();
-      }
-    });
-  }
-
-  handleRpc(rpc, results) {
-    if (!(rpc.method in this)) {
-      console.warn(`No function called ${rpc.method} in Editor`);
-      return;
-    }
-
-    this[rpc.method](rpc.params, results);
   }
 
   handleTriggeredUpdates(results) {
@@ -285,7 +74,6 @@ class Editor {
       results.mergeResults(middleware.update(this.updates));
     });
 
-    this.updates.procedureCalls.forEach((c) => this.handleRpc(c, results));
     this.handleTriggeredUpdates(results);
 
     this.updates.clear();

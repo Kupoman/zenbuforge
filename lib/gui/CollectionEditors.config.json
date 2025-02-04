@@ -5,7 +5,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "projects",
           "key": "/projects"
@@ -13,7 +13,7 @@
       },
       {
         "name": "Add Remote",
-        "method": "loadRemoteProject",
+        "method": "project.loadRemote",
         "userParams": [
           {
             "label": "ID",
@@ -37,7 +37,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "scenes",
           "key": "/scenes"
@@ -51,7 +51,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "nodes",
           "key": "/nodes"
@@ -65,7 +65,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "meshes",
           "key": "/meshes"
@@ -79,7 +79,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "textures",
           "key": "/textures"
@@ -93,7 +93,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "materials",
           "key": "/materials"
@@ -107,7 +107,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "lights",
           "key": "/extensions/KHR_lights_punctual/lights"
@@ -121,7 +121,7 @@
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "cameras",
           "key": "/cameras"

@@ -48,13 +48,58 @@ const settings = {
     base0F: 'cc6633',
   },
 };
+
+class Filesystem {
+  static openFiles() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    let files = [];
+    const promise = new Promise((resolve, reject) => {
+      input.onchange = () => {
+        files = [...input.files];
+        resolve();
+      };
+      input.onerror = (error) => reject(error);
+    });
+    input.click();
+    return promise
+      .then(() => {
+        const bufferPromises = files.map((f) => f.arrayBuffer());
+        return Promise.all(bufferPromises);
+      })
+      .then((buffers) => files.map((f, i) => ({
+        name: f.name,
+        buffer: new Uint8Array(buffers[i]),
+      })));
+  }
+
+  static saveFile(data, filename, type) {
+    const file = new Blob([data], { type });
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(file, filename);
+    } else {
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+    }
+  }
+}
+
 const editor = new Editor(
   {
     system: new WebSystemMiddleware(canvas),
   },
   [
     new SessionMiddleware(),
-    new ProjectMiddleware(),
+    new ProjectMiddleware(Filesystem),
     new Renderer(canvas, settings),
     new Gui(canvas, settings),
   ],

@@ -16,7 +16,8 @@ class WebSystemMiddleware {
     this.results = new Results();
   }
 
-  resize(width, height) { this.canvas.width = width;
+  resize(width, height) {
+    this.canvas.width = width;
     this.canvas.height = height;
 
     this.results.addScratchSessionUpdate({
@@ -90,7 +91,7 @@ class WebSystemMiddleware {
 
         if (event.type === 'KeyboardEvent') {
           if (event.keysym === 'KeyP') {
-            this.results.addCall({ method: 'debug' });
+            this.results.addCall({ method: '*.debug' });
           }
         }
       }
@@ -99,50 +100,6 @@ class WebSystemMiddleware {
     }
 
     return this._getResults();
-  }
-
-  /* eslint-disable-next-line class-methods-use-this */
-  openFiles() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    let files = [];
-    const promise = new Promise((resolve, reject) => {
-      input.onchange = () => {
-        files = [...input.files];
-        resolve();
-      };
-      input.onerror = (error) => reject(error);
-    });
-    input.click();
-    return promise
-      .then(() => {
-        const bufferPromises = files.map((f) => f.arrayBuffer());
-        return Promise.all(bufferPromises);
-      })
-      .then((buffers) => files.map((f, i) => ({
-        name: f.name,
-        buffer: new Uint8Array(buffers[i]),
-      })));
-  }
-
-  /* eslint-disable-next-line class-methods-use-this */
-  saveFile(data, filename, type) {
-    const file = new Blob([data], { type });
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveOrOpenBlob(file, filename);
-    } else {
-      const a = document.createElement('a');
-      const url = URL.createObjectURL(file);
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 0);
-    }
   }
 }
 
