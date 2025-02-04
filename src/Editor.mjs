@@ -318,8 +318,6 @@ class Editor {
     });
 
     if (!this.gui.isActive() && this.renderer) {
-      this.renderer.controls.update(dt);
-
       while (this.system.events.length) {
         const event = this.system.events.shift();
         if (event.type === 'MouseButtonEvent') {
@@ -348,20 +346,6 @@ class Editor {
 
     this.updates.clear();
     this.updates.mergeResults(results);
-  }
-
-  resize(width, height) {
-    this.updates.addScratchSessionUpdate({
-      op: 'add',
-      path: '/width',
-      value: width,
-    });
-
-    this.updates.addScratchSessionUpdate({
-      op: 'add',
-      path: '/height',
-      value: height,
-    });
   }
 }
 
