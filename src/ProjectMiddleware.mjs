@@ -1,4 +1,5 @@
 import * as jsonpatch from 'fast-json-patch';
+import Quaternion from 'quaternion';
 import * as uuid from 'uuid';
 
 import { Context, Results } from 'zf-data';
@@ -18,6 +19,23 @@ class ProjectMiddleware {
 
     this.project = null;
     this.results = new Results();
+
+    this.triggers = [
+      {
+        test: /(add|update):\/nodes\/[^/]*\/extras\/rotationEuler/,
+        action: (update, results) => {
+          const [, , id] = update.path.split('/');
+          const valueRad = update.value.map((v) => (Math.PI * v) / 180);
+          const quat = Quaternion.fromEuler(...valueRad, 'XYZ');
+
+          results.addProjectDataUpdate({
+            op: 'add',
+            path: `/nodes/${id}/rotation`,
+            value: [quat.x, quat.y, quat.z, quat.w],
+          });
+        },
+      },
+    ];
   }
 
   init() {
@@ -62,6 +80,17 @@ class ProjectMiddleware {
     return JSON.parse(resultStr);
   }
 
+  _handleTriggeredUpdates(updates) {
+    updates.projectData.forEach((update) => {
+      const key = `${update.op}:${update.path}`;
+      this.triggers.forEach((trigger) => {
+        if (trigger.test.test(key)) {
+          trigger.action(update, this.results);
+        }
+      });
+    });
+  }
+
   update(updates) {
     const previousId = this.context.clientSession.projectId;
     this.context.update(updates);
@@ -101,6 +130,8 @@ class ProjectMiddleware {
         value: scene,
       });
     }
+
+    this._handleTriggeredUpdates(updates);
 
     return this._getResults();
   }

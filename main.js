@@ -93,17 +93,13 @@ class Filesystem {
   }
 }
 
-const editor = new Editor(
-  {
-    system: new WebSystemMiddleware(canvas),
-  },
-  [
-    new SessionMiddleware(),
-    new ProjectMiddleware(Filesystem),
-    new Renderer(canvas, settings),
-    new Gui(canvas, settings),
-  ],
-);
+const editor = new Editor([
+  new WebSystemMiddleware(canvas),
+  new SessionMiddleware(),
+  new ProjectMiddleware(Filesystem),
+  new Renderer(canvas, settings),
+  new Gui(canvas, settings),
+]);
 
 function loop(time) {
   editor.update(time);
