@@ -327,7 +327,7 @@ class ProjectMiddleware {
 export default ProjectMiddleware;
 
 /* eslint-disable no-restricted-globals */
-if (self?.WorkerGlobalScope) {
+if (typeof self !== 'undefined' && self?.WorkerGlobalScope) {
   const middleware = new ProjectMiddleware();
   const initResults = middleware.init();
   postMessage(JSON.stringify(initResults));
