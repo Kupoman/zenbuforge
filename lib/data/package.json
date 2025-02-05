@@ -1,0 +1,7 @@
+{
+  "name": "zf-data",
+  "main": "index.mjs",
+  "dependencies": {
+    "fast-json-patch": "^3.1.1"
+  }
+}

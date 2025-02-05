@@ -1,19 +1,19 @@
 {
   "projects": {
     "name": "Projects",
-    "key": "/projectList/projects",
+    "key": "/projects",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "projects",
-          "key": "/projectList/projects"
+          "key": "/projects"
         }
       },
       {
         "name": "Add Remote",
-        "method": "loadRemoteProject",
+        "method": "project.loadRemote",
         "userParams": [
           {
             "label": "ID",
@@ -33,98 +33,98 @@
   },
   "scenes": {
     "name": "Scenes",
-    "key": "/project/scenes",
+    "key": "/scenes",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "scenes",
-          "key": "/project/scenes"
+          "key": "/scenes"
         }
       }
     ]
   },
   "nodes": {
     "name": "Nodes",
-    "key": "/project/nodes",
+    "key": "/nodes",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "nodes",
-          "key": "/project/nodes"
+          "key": "/nodes"
         }
       }
     ]
   },
   "meshes": {
     "name": "Meshes",
-    "key": "/project/meshes",
+    "key": "/meshes",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "meshes",
-          "key": "/project/meshes"
+          "key": "/meshes"
         }
       }
     ]
   },
   "textures": {
     "name": "Textures",
-    "key": "/project/textures",
+    "key": "/textures",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "textures",
-          "key": "/project/textures"
+          "key": "/textures"
         }
       }
     ]
   },
   "materials": {
     "name": "Materials",
-    "key": "/project/materials",
+    "key": "/materials",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "materials",
-          "key": "/project/materials"
+          "key": "/materials"
         }
       }
     ]
   },
   "lights": {
     "name": "Lights",
-    "key": "/project/extensions/KHR_lights_punctual/lights",
+    "key": "/extensions/KHR_lights_punctual/lights",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "lights",
-          "key": "/project/extensions/KHR_lights_punctual/lights"
+          "key": "/extensions/KHR_lights_punctual/lights"
         }
       }
     ]
   },
   "cameras": {
     "name": "Cameras",
-    "key": "/project/cameras",
+    "key": "/cameras",
     "actions": [
       {
         "name": "New",
-        "method": "addResource",
+        "method": "project.addResource",
         "params": {
           "kind": "cameras",
-          "key": "/project/cameras"
+          "key": "/cameras"
         }
       }
     ]

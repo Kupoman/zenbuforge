@@ -8,52 +8,82 @@ class Project extends PersistedData {
     super(options);
     this.server = options?.server;
     this.networkProvider = null;
+
+    this.updates = [];
+  }
+
+  _translateUpdates(ymapEvents) {
+    ymapEvents.forEach((ymapEvent) => {
+      let path = ymapEvent.path.join('/');
+      if (path !== '') {
+        path = `/${path}`;
+      }
+      ymapEvent.changes.keys.forEach((change, key) => {
+        const fullPath = `${path}/${key}`;
+        if (ymapEvent.transaction.origin === 'user') {
+          return;
+        }
+        if (change.action === 'add' || change.action === 'update') {
+          const value = ymapEvent.target.get(key);
+          this.updates.push({
+            op: 'add',
+            path: fullPath,
+            value: (typeof value === 'undefined') ? null : JSON.parse(JSON.stringify(value)),
+            origin: 'project',
+          });
+        }
+      });
+    });
   }
 
   init() {
     return Promise.resolve()
       .then(() => super.init())
       .then(() => {
-        gltf.MAP_PROPS.forEach((prop) => {
-          this.jsonProxy[prop] ??= {};
-        });
+        this.ymap.observeDeep((update) => this._translateUpdates(update));
 
-        gltf.COLLECTION_PROPS.forEach((prop) => {
-          this.jsonProxy[prop] ??= {};
-        });
+        this.ydoc.transact(() => {
+          gltf.MAP_PROPS.forEach((prop) => {
+            this.jsonProxy[prop] ??= {};
+          });
 
-        gltf.ARRAY_PROPS.forEach((prop) => {
-          this.jsonProxy[prop] ??= [];
-        });
-        this.jsonProxy.extensions ??= {};
-        this.jsonProxy.extensions.KHR_lights_punctual ??= { lights: {} };
+          gltf.COLLECTION_PROPS.forEach((prop) => {
+            this.jsonProxy[prop] ??= {};
+          });
 
-        this.jsonProxy.asset.version = '2.0';
+          gltf.ARRAY_PROPS.forEach((prop) => {
+            this.jsonProxy[prop] ??= [];
+          });
+          this.jsonProxy.extensions ??= {};
+          this.jsonProxy.extensions.KHR_lights_punctual ??= { lights: {} };
 
-        const requiredExts = [
-          'KHR_lights_punctual',
-        ];
-        requiredExts.forEach((ext) => {
-          const array = this.jsonProxy.extensionsRequired;
-          if (!array.includes(ext)) {
-            array.push(ext);
+          this.jsonProxy.asset.version = '2.0';
+
+          const requiredExts = [
+            'KHR_lights_punctual',
+          ];
+          requiredExts.forEach((ext) => {
+            const array = this.jsonProxy.extensionsRequired;
+            if (!array.includes(ext)) {
+              array.push(ext);
+            }
+          });
+
+          const usedExts = [
+            'KHR_lights_punctual',
+          ];
+          usedExts.forEach((ext) => {
+            const array = this.jsonProxy.extensionsUsed;
+            if (!array.includes(ext)) {
+              array.push(ext);
+            }
+          });
+
+          if (typeof this.jsonProxy.scene === 'undefined' || this.jsonProxy.scene === null) {
+            const currentScene = Object.keys(this.jsonProxy.scenes ?? {})[0];
+            this.jsonProxy.scene = currentScene;
           }
-        });
-
-        const usedExts = [
-          'KHR_lights_punctual',
-        ];
-        usedExts.forEach((ext) => {
-          const array = this.jsonProxy.extensionsUsed;
-          if (!array.includes(ext)) {
-            array.push(ext);
-          }
-        });
-
-        if (typeof this.jsonProxy.scene === 'undefined' || this.jsonProxy.scene === null) {
-          const currentScene = Object.keys(this.jsonProxy.scenes ?? {})[0];
-          this.jsonProxy.scene = currentScene;
-        }
+        }, 'init');
       })
       .then(() => {
         if (!this.server) {
@@ -80,6 +110,11 @@ class Project extends PersistedData {
           console.warn(error);
         }
       });
+  }
+
+  getUpdates(results) {
+    this.updates.forEach((u) => results.addProjectDataUpdate(u));
+    this.updates = [];
   }
 
   destroy() {

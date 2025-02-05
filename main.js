@@ -1,75 +1,10 @@
+import { Results } from 'zf-data';
 import Gui from 'zf-gui';
 import Renderer from 'zf-renderer-threejs';
 
-import Editor from './src/Editor';
-
-class WebSystem {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.events = [];
-
-    this.canvas.addEventListener('click', (event) => {
-      this.events.push({
-        type: 'MouseButtonEvent',
-        x: event.x,
-        y: event.y,
-      });
-    });
-
-    this.canvas.addEventListener('keyup', (event) => {
-      this.events.push({
-        type: 'KeyboardEvent',
-        keysym: event.code,
-      });
-    });
-  }
-
-  openFiles() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    let files = [];
-    const promise = new Promise((resolve, reject) => {
-      input.onchange = () => {
-        files = [...input.files];
-        resolve();
-      };
-      input.onerror = (error) => reject(error);
-    });
-    input.click();
-    return promise
-      .then(() => {
-        const bufferPromises = files.map((f) => f.arrayBuffer());
-        return Promise.all(bufferPromises);
-      })
-      .then((buffers) => files.map((f, i) => ({
-        name: f.name,
-        buffer: new Uint8Array(buffers[i]),
-      })));
-  }
-
-  saveFile(data, filename, type) {
-    const file = new Blob([data], { type });
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveOrOpenBlob(file, filename);
-    } else {
-      const a = document.createElement('a');
-      const url = URL.createObjectURL(file);
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      }, 0);
-    }
-  }
-
-  setProject(name) {
-    document.title = `Zenbuforge - ${name}`;
-  }
-}
+import WebSystemMiddleware from './src/WebSystemMiddleware.mjs';
+import SessionMiddleware from './src/SessionMiddleware.mjs';
+import ProjectMiddleware from './src/ProjectMiddleware.mjs';
 
 const canvas = document.getElementById('viewport');
 const settings = {
@@ -113,22 +48,87 @@ const settings = {
     base0F: 'cc6633',
   },
 };
-const editor = new Editor({
-  system: new WebSystem(canvas),
-  gui: new Gui(canvas, settings),
-  renderer: new Renderer(canvas, settings),
-});
 
-window.onresize = () => editor.resize(window.innerWidth, window.innerHeight);
-editor.resize(window.innerWidth, window.innerHeight);
+class Filesystem {
+  static openFiles() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    let files = [];
+    const promise = new Promise((resolve, reject) => {
+      input.onchange = () => {
+        files = [...input.files];
+        resolve();
+      };
+      input.onerror = (error) => reject(error);
+    });
+    input.click();
+    return promise
+      .then(() => {
+        const bufferPromises = files.map((f) => f.arrayBuffer());
+        return Promise.all(bufferPromises);
+      })
+      .then((buffers) => files.map((f, i) => ({
+        name: f.name,
+        buffer: new Uint8Array(buffers[i]),
+      })));
+  }
+
+  static saveFile(data, filename, type) {
+    const file = new Blob([data], { type });
+    if (window.navigator.msSaveOrOpenBlob) {
+      window.navigator.msSaveOrOpenBlob(file, filename);
+    } else {
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(file);
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }, 0);
+    }
+  }
+}
+
+const middlewares = [
+  new WebSystemMiddleware(canvas),
+  new SessionMiddleware(),
+  new ProjectMiddleware(Filesystem),
+  new Renderer(canvas, settings),
+  new Gui(canvas, settings),
+];
+let prevTime = 0;
+const updates = new Results();
 
 function loop(time) {
-  editor.update(time);
+  const dt = (time - prevTime) / 1000;
+  prevTime = time;
+
+  updates.addScratchSessionUpdate({
+    op: 'add',
+    path: '/dt',
+    value: dt,
+  });
+
+  const results = new Results();
+
+  middlewares.forEach((middleware) => {
+    results.mergeResults(middleware.update(updates));
+  });
+
+  updates.clear();
+  updates.mergeResults(results);
+
   requestAnimationFrame(loop);
 }
 
 Promise.resolve()
-  .then(() => editor.init())
+  .then(() => Promise.all(middlewares.map(async (middleware) => {
+    updates.mergeResults(await middleware.init());
+  })))
   .then(() => {
-    loop();
+    loop(0);
   });
