@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Grid and axes
 - Consistent color scheme
 - Escape key clears selection
+- Auto-focus on hovered window
+- Horizontal scroll bars
 
 ### Fixed
 - Item selection
