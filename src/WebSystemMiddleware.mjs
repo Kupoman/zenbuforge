@@ -90,7 +90,13 @@ class WebSystemMiddleware {
         }
 
         if (event.type === 'KeyboardEvent') {
-          if (event.keysym === 'KeyP') {
+          if (event.keysym === 'Escape') {
+            this.results.addProjectSessionUpdate({
+              op: 'replace',
+              path: '/selections',
+              value: [],
+            });
+          } else if (event.keysym === 'KeyP') {
             this.results.addCall({ method: '*.debug' });
           }
         }

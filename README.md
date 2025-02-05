@@ -24,6 +24,7 @@ A few examples of things that need to be resolved before being production ready:
 * A: Move camera left
 * S: Move camera backward
 * D: Move camera right
+* Escape: Clear selection
 * Arrow Keys: Rotate camera
 * Left Mouse: Select object
 * Right Mouse: Rotate camera
