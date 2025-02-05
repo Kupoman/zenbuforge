@@ -51,12 +51,6 @@ class ProjectMiddleware {
     const projectDetails = this.context.userSession.projects[id];
     this.project = new Project(projectDetails);
 
-    this.results.addProjectSessionUpdate({
-      op: 'replace',
-      path: '/selections',
-      value: [],
-    });
-
     this.results.addProjectDataUpdate({
       op: 'replace',
       path: '',

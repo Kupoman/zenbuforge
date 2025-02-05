@@ -9,13 +9,14 @@ class StorageMock {
     this.data = {};
 
     if (typeof data !== 'undefined') {
-      this.data.projectSession = JSON.stringify(data.projectSession ?? {});
-      this.data.clientSession = JSON.stringify(data.clientSession ?? {});
-      this.data.userSession = JSON.stringify(data.userSession ?? {});
+      Object.entries(data).forEach(([key, value]) => {
+        this.data[key] = JSON.stringify(value);
+      });
     }
   }
 
   setItem(key, value) {
+    assert.isString(value);
     this.data[key] = value;
   }
 
@@ -59,14 +60,13 @@ describe('SessionMiddleware', function () {
 
       assert.deepStrictEqual(userSession.projects, {});
 
-      assert.exists(storage.data.projectSession);
       assert.exists(storage.data.clientSession);
       assert.exists(storage.data.userSession);
     });
 
     it('should read existing values', async function () {
       const data = {
-        projectSession: {
+        'projectSession.project': {
           selections: ['foo'],
           viewports: [{
             x: 100,
@@ -89,7 +89,7 @@ describe('SessionMiddleware', function () {
       const storage = new StorageMock(data);
       const mw = await makeSessionMiddleware(storage);
 
-      assert.deepStrictEqual(mw.context.projectSession, data.projectSession);
+      assert.deepStrictEqual(mw.context.projectSession, data['projectSession.project']);
       assert.deepStrictEqual(mw.context.clientSession, data.clientSession);
       assert.deepStrictEqual(mw.context.userSession, data.userSession);
     });
@@ -97,16 +97,19 @@ describe('SessionMiddleware', function () {
 
   describe('.update', function () {
     it('should write to storage', async function () {
-      const storage = new StorageMock();
+      const data = {
+        'projectSession.new': {},
+      };
+      const storage = new StorageMock(data);
       const mw = await makeSessionMiddleware(storage);
       const update = new Results();
 
-      update.addProjectSessionUpdate({
-        op: 'replace',
-        path: '/selections',
-        value: ['foo'],
+      update.addUserSessionUpdate({
+        op: 'add',
+        path: '/projects/new',
+        value: {},
       });
-      assert.changes(() => mw.update(update), storage.data, 'projectSession');
+      assert.changes(() => mw.update(update), storage.data, 'userSession');
       update.clear();
 
       update.addClientSessionUpdate({
@@ -117,12 +120,57 @@ describe('SessionMiddleware', function () {
       assert.changes(() => mw.update(update), storage.data, 'clientSession');
       update.clear();
 
-      update.addUserSessionUpdate({
-        op: 'add',
-        path: '/projects/new',
-        value: {},
+      update.addProjectSessionUpdate({
+        op: 'replace',
+        path: '/selections',
+        value: ['foo'],
       });
-      assert.changes(() => mw.update(update), storage.data, 'userSession');
+      assert.changes(() => mw.update(update), storage.data, 'projectSession.new');
+      update.clear();
+    });
+
+    it('should initialize project session on projectId change', async function () {
+      const storage = new StorageMock();
+      const mw = await makeSessionMiddleware(storage);
+
+      const update = new Results();
+      update.addClientSessionUpdate({
+        op: 'add',
+        path: '/projectId',
+        value: 'new',
+      });
+      mw.update(update);
+
+      assert.exists(storage.data['projectSession.new']);
+    });
+
+    it('should load project session on projectId change', async function () {
+      const data = {
+        'projectSession.project': {
+          selections: ['foo'],
+          viewports: [{
+            x: 100,
+            y: 100,
+            width: 256,
+            height: 256,
+          }],
+        },
+        clientSession: {
+          projectId: 'current',
+        },
+      };
+      const storage = new StorageMock(data);
+      const mw = await makeSessionMiddleware(storage);
+
+      const update = new Results();
+      update.addClientSessionUpdate({
+        op: 'add',
+        path: '/projectId',
+        value: 'project',
+      });
+      mw.update(update);
+
+      assert.deepStrictEqual(mw.context.projectSession, data['projectSession.project']);
     });
   });
 });
