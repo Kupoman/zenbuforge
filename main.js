@@ -95,7 +95,7 @@ class Filesystem {
 
 const middlewares = [
   new WebSystemMiddleware(canvas),
-  new SessionMiddleware(),
+  new SessionMiddleware(localStorage),
   new ProjectMiddleware(Filesystem),
   new Renderer(canvas, settings),
   new Gui(canvas, settings),

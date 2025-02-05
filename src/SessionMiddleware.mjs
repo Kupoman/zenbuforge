@@ -1,8 +1,10 @@
-import * as jsonpatch from 'fast-json-patch';
+import jsonpatch from 'fast-json-patch';
+
 import { Context, Results } from 'zf-data';
 
 class SessionMiddleware {
-  constructor() {
+  constructor(storageApi) {
+    this.storage = storageApi;
     this.context = new Context();
     this.context.enableProjectSession();
     this.context.enableClientSession();
@@ -12,7 +14,7 @@ class SessionMiddleware {
   init() {
     const results = new Results();
     this.context.enabledState.forEach((key) => {
-      const value = localStorage.getItem(key) ?? '{}';
+      const value = this.storage.getItem(key) ?? '{}';
       this.context[key] = JSON.parse(value);
     });
 
@@ -29,6 +31,7 @@ class SessionMiddleware {
     this.context.userSession.projects ??= {};
 
     this.context.enabledState.forEach((key) => {
+      this.storage.setItem(key, JSON.stringify(this.context[key]));
       results[key].push({
         op: 'replace',
         path: '',
@@ -42,7 +45,7 @@ class SessionMiddleware {
   update(updates) {
     this.context.enabledState.forEach((key) => {
       jsonpatch.applyPatch(this.context[key], updates[key], true, true, true);
-      localStorage.setItem(key, JSON.stringify(this.context[key]));
+      this.storage.setItem(key, JSON.stringify(this.context[key]));
     });
 
     return new Results();
