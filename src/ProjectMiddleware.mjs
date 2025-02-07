@@ -287,6 +287,15 @@ class ProjectMiddleware {
           const normalized = JSON.parse(JSON.stringify(result));
           gltf.normalize(normalized);
 
+          (normalized?.extensions?.KHR_lights_punctual?.lights ?? []).forEach((light) => {
+            const id = gltf.getId(light) ?? uuid.v4();
+            patch.push({
+              op: 'add',
+              path: `/extensions/KHR_lights_punctual/lights/${id}`,
+              value: light,
+            });
+          });
+
           gltf.COLLECTION_PROPS.forEach((prop) => {
             (normalized[prop] ?? []).forEach((obj) => {
               const id = gltf.getId(obj) ?? uuid.v4();
@@ -295,15 +304,6 @@ class ProjectMiddleware {
                 path: `/${prop}/${id}`,
                 value: obj,
               });
-            });
-          });
-
-          (normalized?.extensions?.KHR_lights_punctual?.lights ?? []).forEach((light) => {
-            const id = gltf.getId(light) ?? uuid.v4();
-            patch.push({
-              op: 'add',
-              path: `/extensions/KHR_lights_punctual/lights/${id}`,
-              value: light,
             });
           });
         });
